@@ -1,0 +1,77 @@
+<?php
+/*  Database and other configuration information - Required!!  
+ -- Configure the Variables Below --
+
+*/
+
+$org_name           = 'UltraScan3 LIMS New Instance Setup';
+$org_site           = 'uslims3.uthscsa.edu/uslims3_newlims';
+$site_author        = 'Borries Demeler, University of Texas Health Science Center';
+$site_keywords      = 'ultrascan analytical ultracentrifugation lims';
+                      # The website keywords (meta tag)
+$site_desc          = 'Website to set up a new instance of the UltraScan3 LIMS portal'; # Site description
+
+$admin              = 'Gary Gorbet';
+$admin_phone        = 'Office: (210) 767-2761<br />Fax: (210) 567-6595';
+$admin_email        = 'gegorbet@gmail.com';
+
+$dbusername         = 'new_us3user';  # the name of the MySQL user
+$dbpasswd           = '';  # the password for the MySQL user # password must be set
+$dbname             = 'newus3';  # the name of the database
+$dbhost             = 'localhost'; # the host on which MySQL runs, generally localhost
+
+// Global DB
+$globaldbuser       = 'gfac';  # the name of the MySQL user
+$globaldbpasswd     = '';  # the password for the MySQL user # password must be set
+$globaldbname       = 'gfac';  # the name of the database
+$globaldbhost       = 'localhost'; # the host on which MySQL runs, generally localhost
+
+$ipaddr             = '129.111.140.156'; # the external IP address of the host machine
+$udpport            = 12233; # the port to send udp messages to
+$svcport            = 8080;  # the port for GFAC/Airavata services
+$uses_thrift        = true;  # flags use of Thrift rather than Gfac
+$thr_clust_excls    = array( 'jacinto' );           # Never uses Thrift
+$thr_clust_incls    = array( 'alamo' );             # Always uses Thrift
+
+$top_image          = '#';  # name of the logo to use
+$top_banner         = 'images/#';  # name of the banner at the top
+
+$full_path          = '/srv/www/htdocs/uslims3/uslims3_newlims/';  # Location of the system code
+$data_dir           = '/srv/www/htdocs/uslims3/uslims3_newlims/data/'; # Full path
+$dest_path          = '/srv/www/htdocs/uslims3/';  # Where new databases go
+$output_dir         = '/export/home/us3/database/instances/'; # Where db creation files will go
+$class_dir          = '/srv/www/htdocs/common/class/';        # Production class path
+//$class_dir          = '/srv/www/htdocs/common/class_devel/';  # Development class path
+$sql_dir            = '/export/home/us3/database/sql/'; # Where the sql script files are
+$disclaimer_file    = ''; # the name of a text file with disclaimer info
+
+// Dates
+date_default_timezone_set( 'America/Chicago' );
+$last_update        = '2017/10/13'; # the date the website was last updated
+$copyright_date     = '2017'; # copyright date
+$current_year       = date( 'Y' );
+
+//////////// End of user specific configuration
+
+// ensure a trailing slash
+if ( $data_dir[strlen($data_dir) - 1] != '/' )
+  $data_dir .= '/';
+
+if ( $output_dir[strlen($output_dir) - 1] != '/' )
+  $output_dir .= '/';
+
+if ( $sql_dir[strlen($sql_dir) - 1] != '/' )
+  $sql_dir .= '/';
+
+/* Define our file paths */
+if ( ! defined('HOME_DIR') ) 
+{
+  define('HOME_DIR', $full_path );
+}
+
+if ( ! defined('DEBUG') ) 
+{
+  define('DEBUG', false );
+}
+
+?>
