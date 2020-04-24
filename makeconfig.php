@@ -29,7 +29,7 @@ include 'db.php';
 // Make sure there is a parameter
 if ( $_SERVER['argc'] != 4 )
 {
-  echo "Usage: php makeconfig.php <db_name>";
+  echo "Usage: php makeconfig.php <db_name> <orgsite> <ipaddress>\n";
   exit();
 }
 
@@ -44,10 +44,10 @@ $query  = "SELECT institution, dbuser, dbpasswd, dbhost, " .
           "FROM metadata " .
           "WHERE dbname = '$new_dbname' ";
 
-$result = mysql_query($query) 
-          or die("Query failed : $query<br />\n" . mysql_error());
+$result = mysqli_query( $link, $query ) 
+          or die("Query failed : $query<br />\n" . mysqli_error($link));
 
-if ( mysql_num_rows( $result ) != 1 )
+if ( mysqli_num_rows( $result ) != 1 )
 {
   echo "$new_dbname not found\n";
   exit();
@@ -63,7 +63,7 @@ list( $institution,
       $admin_lname,
       $admin_email,
       $admin_pw,
-      $lab_contact )   = mysql_fetch_array( $result );
+      $lab_contact )   = mysqli_fetch_array( $result );
 
 $today  = date("Y\/m\/d");
 $year   = date( "Y" );
@@ -71,6 +71,7 @@ $year   = date( "Y" );
 #$lab_contact = preg_replace( "/\r|\n/", "<br />", $lab_contact );
 $lab_contact = preg_replace( "/\r/", "<br />", $lab_contact );
 
+// create config.php script
 $text = <<<TEXT
 <?php
 /*  Database and other configuration information - Required!!  
@@ -100,28 +101,17 @@ $text = <<<TEXT
 
 // Global DB
 \$globaldbuser       = 'gfac';  # the name of the MySQL user
-\$globaldbpasswd     = 'backend';  # the password for the MySQL user
+\$globaldbpasswd     = 'PASSW_GF';  # password must be mapped from key
 \$globaldbname       = 'gfac';  # the name of the database
 \$globaldbhost       = 'localhost'; # the host on which MySQL runs, generally localhost
 
-// Admin function
-\$v1_host            = "localhost";
-\$v1_user            = "root";
-\$v1_pass            = "";  # password must be set
-
-\$v2_host            = "localhost";
-\$v2_user            = "lims3_admin";
-\$v2_pass            = "";  # password must be set
-
 \$ipaddr             = '$new_ipaddress'; # the primary IP address of the host machine
 \$ipa_ext            = '$new_ipaddress'; # the external IP address of the host machine
-\$ipad_a             = '10.54.0.1';       # the primary IP address of the host (alamo)
-\$ipae_a             = '10.115.127.212';  # the external IP address of the host (alamo)
 \$udpport            = 12233; # the port to send udp messages to
 \$svcport            = 8080;  # the port for GFAC/Airavata services
 \$uses_thrift        = true;  # flags use of Thrift rather than Gfac
-\$thr_clust_excls    = array( 'bcf' ); # Never uses Thrift
-\$thr_clust_incls    = array( 'alamo' ); # Always uses Thrift
+\$thr_clust_excls    = array( 'us3iab-node0' ); # Never uses Thrift
+\$thr_clust_incls    = array( 'comet' ); # Always uses Thrift
 
 \$top_image          = '#';  # name of the logo to use
 \$top_banner         = 'images/#';  # name of the banner at the top

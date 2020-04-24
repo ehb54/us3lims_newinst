@@ -24,6 +24,7 @@ if ( ($_SESSION['userlevel'] != 3) &&
 
 include 'config.php';
 include 'db.php';
+global $link;
 
 // Start displaying page
 $page_title = 'View Users';
@@ -51,13 +52,14 @@ exit();
 // Function to create a table of all records
 function create_table()
 {
+  global $link;
   $query  = "SELECT personID, lname, fname, " .
             "organization, address, city, state, zip, country, " .
             "phone, email " .
             "FROM people " .
             "ORDER BY lname, fname ";
-  $result = mysql_query($query) 
-            or die("Query failed : $query<br />\n" . mysql_error());
+  $result = mysqli_query( $link, $query ) 
+            or die("Query failed : $query<br />\n" . mysqli_error($link));
 
   $table = <<<HTML
   <table cellspacing='0' cellpadding='7' class='style1 sortable' style='width:95%;'>
@@ -77,7 +79,7 @@ function create_table()
     <tbody>
 HTML;
 
-  while ( $row = mysql_fetch_array($result) )
+  while ( $row = mysqli_fetch_array($result) )
   {
     foreach ($row as $key => $value)
     {

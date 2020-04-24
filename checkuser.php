@@ -10,6 +10,7 @@ session_start();
 include 'config.php';
 include 'db.php';
 include 'lib/utility.php';
+global $link;
 
 $email  = trim($_POST['email']);
 $passwd = trim($_POST['password']);
@@ -36,10 +37,10 @@ $md5pass = md5($passwd);
 // Find the id of the record with the same e-mail address:
 
 $query  = "SELECT * FROM people WHERE email='$email'";
-$result = mysql_query($query)
-          or die( "Query failed : $query<br />\n" . mysql_error() );
-$row    = mysql_fetch_assoc($result);
-$count  = mysql_num_rows($result);
+$result = mysqli_query($link,$query)
+          or die( "Query failed : $query<br />\n" . mysqli_error($link) );
+$row    = mysqli_fetch_assoc($result);
+$count  = mysqli_num_rows($result);
 
 // Register the variables:
 
@@ -108,7 +109,7 @@ if ( $row["activated"] != 1 )
 // Update last login time
 
 $query = "UPDATE people SET lastLogin=now() WHERE personID=$personID";
-mysql_query($query);
+mysqli_query($link,$query);
 
 header("Location: http://$org_site/index.php");
 exit();

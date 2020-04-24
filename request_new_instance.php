@@ -9,6 +9,7 @@ session_start();
 
 include 'config.php';
 include 'db.php';
+global $link;
 
 // Start displaying page
 $page_title = 'Request a New LIMS Instance';
@@ -68,6 +69,7 @@ exit();
 // Function to create the new record
 function do_create()
 {
+  global $link;
   global $org_site;
   include 'get_meta_info.php';
   include 'config.php';
@@ -90,9 +92,9 @@ function do_create()
               . " (only alphanumeric and underscore allowed).<br/>";
   $query  = "SELECT COUNT(*) FROM metadata " .
             "WHERE inst_abbrev = '$inst_abbrev' ";
-  $result =  mysql_query($query)
-             or die("Query failed : $query<br />\n" . mysql_error());
-  list( $count ) = mysql_fetch_array( $result );
+  $result =  mysqli_query( $link, $query )
+             or die("Query failed : $query<br />\n" . mysqli_error($link));
+  list( $count ) = mysqli_fetch_array( $result );
   if ( $count > 0 )
     $message .= "--abbreviation $inst_abbrev is already in use.<br />";
 
@@ -133,8 +135,8 @@ function do_create()
              "status = 'pending', " .
              "updateTime = NOW() ";
 
-    mysql_query($query)
-      or die("Query failed : $query<br />\n" . mysql_error());
+    mysqli_query( $link, $query )
+      or die("Query failed : $query<br />\n" . mysqli_error($link));
 
     email_admin( $institution );
     show_record();

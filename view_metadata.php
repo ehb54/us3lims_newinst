@@ -23,6 +23,7 @@ if ( ( $_SESSION['userlevel'] != 4 ) &&
 
 include 'config.php';
 include 'db.php';
+global $link;
 
 // Start displaying page
 $page_title = 'View New LIMS Requests';
@@ -54,11 +55,12 @@ exit();
 // Function to display a table of all records
 function create_table()
 {
+global $link;
   $query  = "SELECT metadataID, institution, admin_fname, admin_lname, updateTime " .
             "FROM metadata " .
             "ORDER BY updateTime DESC ";
-  $result = mysql_query($query) 
-            or die("Query failed : $query<br />\n" . mysql_error());
+  $result = mysqli_query( $link, $query ) 
+            or die( "Query failed : $query<br />\n" . mysqli_error( $link ) );
 
   $table = <<<HTML
   <form action="{$_SERVER['PHP_SELF']}" method="post" >
@@ -81,7 +83,7 @@ function create_table()
     <tbody>
 HTML;
 
-  while ( $row = mysql_fetch_array($result) )
+  while ( $row = mysqli_fetch_array($result) )
   {
     foreach ($row as $key => $value)
     {

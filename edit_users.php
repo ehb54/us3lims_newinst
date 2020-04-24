@@ -24,6 +24,7 @@ if ( ($_SESSION['userlevel'] != 4) &&
 include 'config.php';
 include 'db.php';
 include 'lib/utility.php';
+global $link;
 
 // Are we being directed here from a push button?
 if (isset($_POST['prior']))
@@ -89,20 +90,21 @@ exit();
 // Function to redirect to prior record
 function do_prior()
 {
+  global $link;
   $personID = $_POST['personID'];
 
   $query  = "SELECT personID FROM people " .
             "ORDER BY lname, fname ";
-  $result = mysql_query($query)
-      or die("Query failed : $query<br />\n" . mysql_error());
+  $result = mysqli_query( $link, $query )
+      or die("Query failed : $query<br />\n" . mysqli_error($link));
 
   // Find prior record
-  list($current) = mysql_fetch_array($result);
+  list($current) = mysqli_fetch_array($result);
   $prior = null;
   while ($current != NULL && $personID != $current)
   {
     $prior = $current;
-    list($current) = mysql_fetch_array($result);
+    list($current) = mysqli_fetch_array($result);
   }
 
   $redirect = ($prior == null) ? "" : "?personID=$prior";
@@ -112,18 +114,19 @@ function do_prior()
 // Function to redirect to next record
 function do_next()
 {
+  global $link;
   $personID = $_POST['personID'];
 
   $query  = "SELECT personID FROM people " .
             "ORDER BY lname, fname ";
-  $result = mysql_query($query)
-      or die("Query failed : $query<br />\n" . mysql_error());
+  $result = mysqli_query( $link, $query )
+      or die("Query failed : $query<br />\n" . mysqli_error($link));
 
   // Find next record
   $current = null;
   while ($personID != $current)
-    list($current) = mysql_fetch_array($result);
-  list($next) = mysql_fetch_array($result);
+    list($current) = mysqli_fetch_array($result);
+  list($next) = mysqli_fetch_array($result);
 
   $redirect = ($next == null) ? "?personID=$personID" : "?personID=$next";
   header("Location: {$_SERVER['PHP_SELF']}$redirect");
@@ -132,12 +135,13 @@ function do_next()
 // Function to create a new record
 function do_new()
 {
+  global $link;
   // Insert an ID
   $query = "INSERT INTO people (lname, fname, activated) " .
            "VALUES ('Last', 'First', 1 ) ";
-  mysql_query($query)
-    or die("Query failed : $query<br />\n" . mysql_error());
-  $new = mysql_insert_id();
+  mysqli_query( $link, $query )
+    or die("Query failed : $query<br />\n" . mysqli_error($link));
+  $new = mysqli_insert_id( $link );
 
   header("Location: {$_SERVER['PHP_SELF']}?personID=$new");
 }
@@ -145,12 +149,13 @@ function do_new()
 // Function to delete the current record
 function do_delete()
 {
+  global $link;
   $personID = $_POST['personID'];
 
   $query = "DELETE FROM people " .
            "WHERE personID = $personID ";
-  mysql_query($query)
-    or die("Query failed : $query<br />\n" . mysql_error());
+  mysqli_query( $link, $query )
+    or die("Query failed : $query<br />\n" . mysqli_error($link));
 
   header("Location: {$_SERVER['PHP_SELF']}");
 }
@@ -158,6 +163,7 @@ function do_delete()
 // Function to update the current record
 function do_update()
 {
+  global $link;
   include 'get_user_info.php';
   $personID  = $_POST['personID'];
   $userlevel = $_POST['userlevel'];
@@ -179,8 +185,8 @@ function do_update()
              "userlevel      = '$userlevel'       " .
              "WHERE personID =  $personID         ";
 
-    mysql_query($query)
-          or die("Query failed : $query<br />\n" . mysql_error());
+    mysqli_query( $link, $query )
+          or die("Query failed : $query<br />\n" . mysqli_error($link));
   }
 
   else
@@ -194,6 +200,7 @@ function do_update()
 // Function to display and navigate records
 function display_record()
 {
+  global $link;
   // Find a record to display
   $personID = get_id();
   if ($personID === false)
@@ -204,10 +211,10 @@ function display_record()
             "userlevel " .
             "FROM people " .
             "WHERE personID = $personID ";
-  $result = mysql_query($query) 
-            or die("Query failed : $query<br />\n" . mysql_error());
+  $result = mysqli_query($link,$query) 
+            or die("Query failed : $query<br />\n" . mysqli_error($link));
 
-  $row    = mysql_fetch_array($result, MYSQL_ASSOC);
+  $row    = mysqli_fetch_array($result, MYSQLI_ASSOC);
 
   foreach ($row as $key => $value)
   {
@@ -222,9 +229,9 @@ function display_record()
                   "  <option value='null'>None selected...</option>\n";
   $query  = "SELECT personID, lname, fname FROM people " .
             "ORDER BY lname, fname ";
-  $result = mysql_query($query)
-            or die("Query failed : $query<br />\n" . mysql_error());
-  while (list($t_id, $t_last, $t_first) = mysql_fetch_array($result))
+  $result = mysqli_query($link,$query)
+            or die("Query failed : $query<br />\n" . mysqli_error($link));
+  while (list($t_id, $t_last, $t_first) = mysqli_fetch_array($result))
   {
     $t_last   = html_entity_decode( stripslashes($t_last)  );
     $t_first  = html_entity_decode( stripslashes($t_first) );
@@ -282,6 +289,7 @@ HTML;
 // Function to figure out which record to display
 function get_id()
 {
+  global $link;
   // See if we are being directed to a particular record
   if (isset($_GET['personID']))
   {
@@ -294,12 +302,12 @@ function get_id()
   $query  = "SELECT personID FROM people " .
             "ORDER BY lname, fname " .
             "LIMIT 1 ";
-  $result = mysql_query($query)
-      or die("Query failed : $query<br />\n" . mysql_error());
+  $result = mysqli_query($link,$query)
+      or die("Query failed : $query<br />\n" . mysqli_error($link));
 
-  if (mysql_num_rows($result) == 1)
+  if (mysqli_num_rows($result) == 1)
   {
-    list($personID) = mysql_fetch_array($result);
+    list($personID) = mysqli_fetch_array($result);
     return( $personID );
   }
 
@@ -329,6 +337,7 @@ HTML;
 // Function to edit a record
 function edit_record()
 {
+  global $link;
   // Get the record we need to edit
   $personID = $_POST['personID'];
 
@@ -337,10 +346,10 @@ function edit_record()
             "userlevel " .
             "FROM people " .
             "WHERE personID = $personID ";
-  $result = mysql_query($query) 
-            or die("Query failed : $query<br />\n" . mysql_error());
+  $result = mysqli_query($link,$query) 
+            or die("Query failed : $query<br />\n" . mysqli_error($link));
 
-  $row = mysql_fetch_array($result);
+  $row = mysqli_fetch_array($result);
 
   $lname           = html_entity_decode(stripslashes($row['lname']));
   $fname           = html_entity_decode(stripslashes($row['fname']));

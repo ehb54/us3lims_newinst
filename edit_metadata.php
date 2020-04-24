@@ -24,6 +24,7 @@ if ( ( $_SESSION['userlevel'] != 4 ) &&
 include 'config.php';
 include 'db.php';
 include 'lib/utility.php';
+global $link;
 
 if (isset($_POST['update']))
 {
@@ -43,10 +44,10 @@ if ( isset( $_POST['create'] ) )
             "status " .
             "FROM metadata " .
             "WHERE metadataID = $metadataID ";
-  $result = mysql_query($query) 
-            or die("Query failed : $query<br />\n" . mysql_error());
+  $result = mysqli_query( $link, $query ) 
+            or die("Query failed : $query<br />\n" . mysqli_error($link));
 
-  $row    = mysql_fetch_array($result, MYSQL_ASSOC);
+  $row    = mysqli_fetch_array($result, MYSQLI_ASSOC);
 
   $message = '';  
   foreach ($row as $key => $value)
@@ -77,7 +78,7 @@ if ( isset($_POST['email_login']) )
   if ( isset( $_POST['metadataID'] ) )
   {
     $metadataID = $_POST['metadataID'];
-    email_login_info( $metadataID );
+    email_login_info( $metadataID, $link );
     $redirect = "?ID=$metadataID";
     $_SESSION['message'] = 'The email has been sent';
   }
@@ -135,6 +136,7 @@ exit();
 // Function to update the current record
 function do_update()
 {
+  global $link;
   include 'get_meta_info.php';
   $metadataID   =                                     $_POST['metadataID'];
   $dbname       = trim(substr(addslashes(htmlentities($_POST['dbname'])), 0,30));
@@ -169,9 +171,9 @@ function do_update()
   $query  = "SELECT COUNT(*) FROM metadata " .
             "WHERE inst_abbrev = '$inst_abbrev' " .
             "AND metadataID != $metadataID ";
-  $result =  mysql_query($query)
-             or die("Query failed : $query<br />\n" . mysql_error());
-  list( $count ) = mysql_fetch_array( $result );
+  $result =  mysqli_query( $link, $query )
+             or die("Query failed : $query<br />\n" . mysqli_error($link));
+  list( $count ) = mysqli_fetch_array( $result );
   if ( $count > 0 )
     $message .= "--abbreviation $inst_abbrev is already in use.<br />";
 
@@ -201,8 +203,8 @@ function do_update()
              "updateTime = NOW() " .
              "WHERE metadataID = $metadataID ";
 
-    mysql_query($query)
-      or die("Query failed : $query<br />\n" . mysql_error());
+    mysqli_query( $link, $query )
+      or die("Query failed : $query<br />\n" . mysqli_error($link));
 
     header("Location: $_SERVER[PHP_SELF]?ID=$metadataID");
   }
@@ -219,6 +221,7 @@ function do_update()
 // Function to display and navigate records
 function display_record()
 {
+  global $link;
   // Find a record to display
   $metadataID = get_id();
   if ($metadataID === false)
@@ -231,10 +234,10 @@ function display_record()
             "status " .
             "FROM metadata " .
             "WHERE metadataID = $metadataID ";
-  $result = mysql_query($query) 
-            or die("Query failed : $query<br />\n" . mysql_error());
+  $result = mysqli_query( $link, $query ) 
+            or die("Query failed : $query<br />\n" . mysqli_error($link));
 
-  $row    = mysql_fetch_array($result, MYSQL_ASSOC);
+  $row    = mysqli_fetch_array($result, MYSQLI_ASSOC);
 
   // Create local variables; make sure IE displays empty cells properly
   foreach ($row as $key => $value)
@@ -306,6 +309,7 @@ HTML;
 // Function to figure out which record to display
 function get_id()
 {
+  global $link;
   // See if we are being directed to a particular record
   if (isset($_GET['ID']))
     return( $_GET['ID'] );
@@ -314,12 +318,12 @@ function get_id()
   $query  = "SELECT metadataID FROM metadata " .
             "ORDER BY updateTime DESC " .
             "LIMIT 1 ";
-  $result = mysql_query($query)
-      or die("Query failed : $query<br />\n" . mysql_error());
+  $result = mysqli_query( $link, $query )
+      or die("Query failed : $query<br />\n" . mysqli_error($link));
 
-  if (mysql_num_rows($result) == 1)
+  if (mysqli_num_rows($result) == 1)
   {
-    list($metadataID) = mysql_fetch_array($result);
+    list($metadataID) = mysqli_fetch_array($result);
     return( $metadataID );
   }
 
@@ -349,6 +353,7 @@ HTML;
 // Function to edit a record
 function edit_record()
 {
+  global $link;
   // Get the record we need to edit
   if ( isset( $_POST['edit'] ) )
     $metadataID = $_POST['metadataID'];
@@ -370,10 +375,10 @@ function edit_record()
             "status " .
             "FROM metadata " .
             "WHERE metadataID = $metadataID ";
-  $result = mysql_query($query) 
-            or die("Query failed : $query<br />\n" . mysql_error());
+  $result = mysqli_query( $link, $query ) 
+            or die("Query failed : $query<br />\n" . mysqli_error($link));
 
-  $row = mysql_fetch_array($result);
+  $row = mysqli_fetch_array($result);
 
 
   $institution         = html_entity_decode( stripslashes( $row['institution'] ) );
@@ -479,6 +484,7 @@ HTML;
 // Function to display the instance's login information
 function login_info()
 {
+  global $link;
   // Get the record we need to edit
   if ( isset( $_POST['metadataID'] ) )
     $metadataID = $_POST['metadataID'];
@@ -495,8 +501,8 @@ function login_info()
             "secure_user, secure_pw " .
             "FROM metadata " .
             "WHERE metadataID = $metadataID ";
-  $result = mysql_query($query) 
-            or die("Query failed : $query<br />\n" . mysql_error());
+  $result = mysqli_query( $link, $query ) 
+            or die("Query failed : $query<br />\n" . mysqli_error($link));
 
   list( $institution,
         $inst_abbrev,
@@ -508,7 +514,7 @@ function login_info()
         $admin_email,
         $admin_pw,
         $new_secureuser,
-        $new_securepw )   = mysql_fetch_array( $result );
+        $new_securepw )   = mysqli_fetch_array( $result );
 
   $new_grantsfile = $new_dbname . '_grants.sql';
 
@@ -518,14 +524,16 @@ function login_info()
 #!/bin/bash
 # A script to create the $institution database
 
-echo "Use the root password in all cases here";
+echo "Enter the sql root password here";
+read -s -p "Sql Root Password : " PASSW
+LOGIN="-u root -p\${PASSW}"
 
-mysqladmin -u root -p CREATE $new_dbname
-mysql -u root -p $new_dbname < $new_grantsfile
+mysqladmin \${LOGIN} p CREATE $new_dbname
+mysql \${LOGIN} $new_dbname < $new_grantsfile
 
 pushd $sql_dir
-mysql -u root -p $new_dbname < us3.sql
-mysql -u root -p $new_dbname < us3_procedures.sql
+mysql \${LOGIN} $new_dbname < us3.sql
+mysql \${LOGIN} $new_dbname < us3_procedures.sql
 popd
 TEXT;
 
@@ -575,8 +583,8 @@ TEXT;
 DIR=\$(pwd)
 htmldir="/srv/www/htdocs\uslims3"
 
-echo "Use the us3 password here";
-svn co svn://us3@bcf.uthscsa.edu/us3_lims/trunk \$htmldir/$new_dbname
+cd $htmldir
+git checkout http://github.com/ehb54/us3lims_dbinst.git \$htmldir/$new_dbname
 mkdir \$htmldir/$new_dbname/data
 #sudo chgrp apache \$htmldir/$new_dbname/data
 chmod g+w \$htmldir/$new_dbname/data

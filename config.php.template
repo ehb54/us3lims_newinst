@@ -5,7 +5,7 @@
 */
 
 $org_name           = 'UltraScan3 LIMS New Instance Setup';
-$org_site           = 'uslims3.uthscsa.edu/uslims3_newlims';
+$org_site           = 'uslims.uleth.ca/uslims3_newlims';
 $site_author        = 'Borries Demeler, University of Texas Health Science Center';
 $site_keywords      = 'ultrascan analytical ultracentrifugation lims';
                       # The website keywords (meta tag)
@@ -47,8 +47,8 @@ $disclaimer_file    = ''; # the name of a text file with disclaimer info
 
 // Dates
 date_default_timezone_set( 'America/Chicago' );
-$last_update        = '2017/10/13'; # the date the website was last updated
-$copyright_date     = '2017'; # copyright date
+$last_update        = '2020/04/11'; # the date the website was last updated
+$copyright_date     = '2020'; # copyright date
 $current_year       = date( 'Y' );
 
 //////////// End of user specific configuration

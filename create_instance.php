@@ -24,6 +24,7 @@ if ( ($_SESSION['userlevel'] != 4) &&
 include 'config.php';
 include 'db.php';
 include 'lib/utility.php';
+global $link;
 
 // Start displaying page
 $page_title = "Create DB Instance";
@@ -55,6 +56,7 @@ exit();
 
 function do_step1()
 {
+  global $link;
   // First time here
   $metadataID = $_SESSION['metadataID'];
   unset( $_SESSION['metadataID'] );
@@ -63,17 +65,17 @@ echo "MetadataID = $metadataID<br />";
   // Double check if this has been done before
   $query  = "SELECT status FROM metadata " .
             "WHERE metadataID = $metadataID ";
-  $result = mysql_query($query) 
-            or die("Query failed : $query<br />\n" . mysql_error());
+  $result = mysqli_query($link,$query) 
+            or die("Query failed : $query<br />\n" . mysqli_error($link));
 
-  if ( mysql_num_rows( $result ) != 1 ) 
+  if ( mysqli_num_rows( $result ) != 1 ) 
   {
     error( "Error: metadata record not found." );
     return;
   }
 
   $status = '';
-  list( $status ) = mysql_fetch_array( $result );
+  list( $status ) = mysqli_fetch_array( $result );
   if ( $status == 'completed' )
   {
     error( "Error: this database has already been set up." );
@@ -85,8 +87,8 @@ echo "Metadata status = $status<br />";
             "admin_email, admin_pw " .
             "FROM metadata " .
             "WHERE metadataID = $metadataID ";
-  $result = mysql_query($query) 
-            or die("Query failed : $query<br />\n" . mysql_error());
+  $result = mysqli_query($link,$query) 
+            or die("Query failed : $query<br />\n" . mysqli_error($link));
 
   list( $institution,
         $inst_abbrev,
@@ -96,7 +98,7 @@ echo "Metadata status = $status<br />";
         $new_dbhost,
         $new_limshost,
         $admin_email,
-        $admin_pw )   = mysql_fetch_array( $result );
+        $admin_pw )   = mysqli_fetch_array( $result );
 
   $new_secureuser = $inst_abbrev . '_sec';
   $new_securepw   = makeRandomPassword();
@@ -109,8 +111,8 @@ echo "Metadata status = $status<br />";
             "secure_user = '$new_secureuser', " .
             "secure_pw = '$new_securepw' " .
             "WHERE metadataID = $metadataID ";
-  mysql_query($query) 
-        or die("Query failed : $query<br />\n" . mysql_error());
+  mysqli_query($link,$query) 
+        or die("Query failed : $query<br />\n" . mysqli_error($link));
 
   global $sql_dir;
 
@@ -204,6 +206,7 @@ HTML;
 
 function do_step2()
 {
+  global $link;
   $metadataID = $_POST['metadataID'];
 
   setup_DB( $metadataID );
@@ -211,16 +214,16 @@ function do_step2()
   $query  = "SELECT institution, dbname, dbuser, dbpasswd, dbhost " .
             "FROM metadata " .
             "WHERE metadataID = $metadataID ";
-  $result = mysql_query($query) 
-            or die("Query failed : $query<br />\n" . mysql_error());
+  $result = mysqli_query($link,$query) 
+            or die("Query failed : $query<br />\n" . mysqli_error($link));
 
-  if ( mysql_num_rows( $result ) != 1 ) return;
+  if ( mysqli_num_rows( $result ) != 1 ) return;
 
   list( $institution,
         $new_dbname,
         $new_dbuser,
         $new_dbpasswd,
-        $new_dbhost )    = mysql_fetch_array( $result );
+        $new_dbhost )    = mysqli_fetch_array( $result );
 
   global $full_path;
   $makeconfigfile = $full_path . 'makeconfig.php';
@@ -232,8 +235,7 @@ function do_step2()
 DIR=\$(pwd)
 htmldir="/srv/www/htdocs/uslims3"
 
-echo "Use the us3 password here";
-svn co svn://us3@svn.aucsolutions.com/us3_lims/trunk \$htmldir/$new_dbname
+git checkout http://github.com/ehb54/us3lims_dbinst.git \$htmldir/$new_dbname
 mkdir \$htmldir/$new_dbname/data
 #sudo chgrp apache \$htmldir/$new_dbname/data
 chmod g+w \$htmldir/$new_dbname/data
@@ -274,7 +276,7 @@ TEXT;
     <tr><th>DB User Password:</th><td>$new_dbpasswd</td></tr>
     <tr><th>Server name:</th><td>$new_dbhost</td></tr>
     <tr><th>Global DB User:</th><td>gfac</td></tr>
-    <tr><th>Global DB password:</th><td>backend</td></tr>
+    <tr><th>Global DB password:</th><td>PASSW_GF</td></tr>
     <tr><th>Global DB name:</th><td>gfac</td></tr>
     <tr><th>Global DB host:</th><td>uslims3.uthscsa.edu</td></tr>
   </table>
@@ -284,11 +286,12 @@ TEXT;
 HTML;
 
   // Mail the administrator automatically
-  email_login_info( $metadataID );
+  email_login_info( $metadataID, $link );
 }
 
 function setup_DB( $metadataID )
 {
+  global $link;
   // Let's just get everything we're going to need
   $query  = "SELECT institution, dbname AS new_dbname, dbuser AS new_dbuser, " .
             "dbpasswd AS new_dbpasswd, dbhost AS new_dbhost, " .
@@ -298,10 +301,10 @@ function setup_DB( $metadataID )
             "status " .
             "FROM metadata " .
             "WHERE metadataID = $metadataID ";
-  $result = mysql_query($query) 
-            or die("Query failed : $query<br />\n" . mysql_error());
+  $result = mysqli_query($link,$query) 
+            or die("Query failed : $query<br />\n" . mysqli_error($link));
 
-  $row    = mysql_fetch_array($result, MYSQL_ASSOC);
+  $row    = mysqli_fetch_array($result, MYSQLI_ASSOC);
 
   // Create local variables
   foreach ($row as $key => $value)
@@ -312,11 +315,8 @@ function setup_DB( $metadataID )
   $admin_pw_hash = MD5( $admin_pw );
 
   // Now switch databases
-  $link2 = mysql_connect( $new_dbhost, $new_dbuser, $new_dbpasswd ) 
-           or die("Could not connect to database server. ");
-
-  mysql_select_db( $new_dbname, $link2 ) 
-          or die("Could not select $new_dbname database. " );
+  $link2 = mysqli_connect( $new_dbhost, $new_dbuser, $new_dbpasswd, $new_dbname ) 
+           or die("Could not connect to database server or select $new_dbname. ");
 
   // Administrator record
   $guid = uuid();
@@ -329,9 +329,9 @@ function setup_DB( $metadataID )
             "organization = '$institution', " .
             "activated = true, " .
             "userlevel = 3 ";
-  mysql_query($query) 
-        or die("Query failed : $query<br />\n" . mysql_error());
-  $admin_id = mysql_insert_id();
+  mysqli_query($link2,$query) 
+        or die("Query failed : $query<br />\n" . mysqli_error($link2));
+  $admin_id = mysqli_insert_id($link2);
 
   // The institution's lab
   // One is already created in the sql scripts
@@ -340,8 +340,8 @@ function setup_DB( $metadataID )
             "building = '$lab_contact', " .
             "dateUpdated = NOW() " .
             "WHERE labID = 1 ";
-  mysql_query($query) 
-        or die("Query failed : $query<br />\n" . mysql_error());
+  mysqli_query($link2,$query) 
+        or die("Query failed : $query<br />\n" . mysqli_error($link2));
   $lab_id = 1;
 
   // The instrument in the lab
@@ -350,16 +350,16 @@ function setup_DB( $metadataID )
             "labID = '$lab_id', " .
             "serialNumber = '$instrument_serial', " .
             "dateUpdated = NOW() ";
-  mysql_query($query) 
-        or die("Query failed : $query<br />\n" . mysql_error());
-  $instrument_id = mysql_insert_id();
+  mysqli_query($link2,$query) 
+        or die("Query failed : $query<br />\n" . mysqli_error($link2));
+  $instrument_id = mysqli_insert_id($link2);
 
   // Set permits for these users to use the instrument
   $query  = "INSERT INTO permits SET " .
             "personID = $admin_id, " .
             "instrumentID = $instrument_id ";
-  mysql_query($query) 
-        or die("Query failed : $query<br />\n" . mysql_error());
+  mysqli_query($link2,$query) 
+        or die("Query failed : $query<br />\n" . mysqli_error($link2));
 
   // Create a couple of abstract channels
   $query  = "INSERT INTO abstractChannel SET " .
@@ -377,8 +377,8 @@ function setup_DB( $metadataID )
             "radialBandBottom    = 0.0, " .
             "radialMeniscusPos   = 0.0, " .
             "dateUpdated         = NOW()";
-  mysql_query($query) 
-        or die("Query failed : $query<br />\n" . mysql_error());
+  mysqli_query($link2,$query) 
+        or die("Query failed : $query<br />\n" . mysqli_error($link2));
 
   $query  = "INSERT INTO abstractChannel SET " .
             "abstractChannelID   = 2, " .
@@ -395,8 +395,8 @@ function setup_DB( $metadataID )
             "radialBandBottom    = 0.0, " .
             "radialMeniscusPos   = 0.0, " .
             "dateUpdated         = NOW()";
-  mysql_query($query) 
-        or die("Query failed : $query<br />\n" . mysql_error());
+  mysqli_query($link2,$query) 
+        or die("Query failed : $query<br />\n" . mysqli_error($link2));
 
   // Create a couple of channels to be used
   // For now just choose abstract channels to base them on
@@ -406,8 +406,8 @@ function setup_DB( $metadataID )
             "channelGUID = '$guid', " .
             "comments = 'Record generated automatically by newlims program.' , " .
             "dateUpdated = NOW() ";
-  mysql_query($query) 
-        or die("Query failed : $query<br />\n" . mysql_error());
+  mysqli_query($link2,$query) 
+        or die("Query failed : $query<br />\n" . mysqli_error($link2));
 
   $guid = uuid();
   $query  = "INSERT INTO channel SET " .
@@ -415,23 +415,21 @@ function setup_DB( $metadataID )
             "channelGUID = '$guid', " .
             "comments = 'Record generated automatically by newlims program.' , " .
             "dateUpdated = NOW() ";
-  mysql_query($query) 
-        or die("Query failed : $query<br />\n" . mysql_error());
+  mysqli_query($link2,$query) 
+        or die("Query failed : $query<br />\n" . mysqli_error($link2));
 
   // Add the us3 admins to this database
   add_admins( $link2 );
 
   // Update status in metadata DB
   global $link, $dbhost, $dbusername, $dbpasswd, $dbname;
-  $link = mysql_connect( $dbhost, $dbusername, $dbpasswd ) 
-          or die("Could not connect to database server. ");
-  mysql_select_db($dbname, $link) 
-          or die("Could not select database $dbname. " );
+  $link = mysqli_connect( $dbhost, $dbusername, $dbpasswd, $dbname ) 
+          or die("Could not connect to database server or select $dbname. ");
   $query  = "UPDATE metadata SET " .
             "status = 'completed' " .
             "WHERE metadataID = $metadataID ";
-  mysql_query($query) 
-        or die("Query failed : $query<br />\n" . mysql_error());
+  mysqli_query($link,$query) 
+        or die("Query failed : $query<br />\n" . mysqli_error($link));
 
 }
 
@@ -439,10 +437,12 @@ function setup_DB( $metadataID )
 function add_admins( $link2 )
 {
   // Start queries
+  $mp_cmd    = exec( "ls ~us3/scripts/map_password" );
+  $md5_super = exec( "$mp_cmd PASSW_SU MD5" );
   $email_list = array();
   $query  = "SELECT email FROM people ";
-  $result = mysql_query( $query, $link2 );
-  while ( list( $email ) = mysql_fetch_array( $result ) )
+  $result = mysqli_query( $link2, $query );
+  while ( list( $email ) = mysqli_fetch_array( $result ) )
     $email_list[] = $email;
 
   // Guard against possibility that one of us is the one requesting
@@ -469,15 +469,15 @@ function add_admins( $link2 )
               "zip           = '59812', " .
               "country       = 'US', " .
               "phone         = '406-285-1935', " .
-              "password      = MD5(''), " .                # password must be set
+              "password      = '$md5_super', " .
               "organization  = 'University of Montana', " .
               "username      = 'us3demeler', " .
               "activated     = 1, " .
               "userlevel     = 4 " .
               $where ;
-  $result   = mysql_query( $query, $link2 );
+  $result   = mysqli_query( $link2, $query );
   if ( ! $result )
-    echo "Query failed : $query\n" . mysql_error();
+    echo "Query failed : $query\n" . mysqli_error($link2);
 
   if ( in_array( 'alexsav.science@gmail.com', $email_list ) )
   {
@@ -502,15 +502,15 @@ function add_admins( $link2 )
               "zip           = '59812', " .
               "country       = 'US', " .
               "phone         = '555-555-5555', " .
-              "password      = MD5(''), " .                 # password must be set
+              "password      = '$md5_super', " .
               "organization  = 'University of Montana', " .
               "username      = 'us3savelyev', " .
               "activated     = 1, " .
               "userlevel     = 5 " .
               $where ;
-  $result = mysql_query( $query, $link2 );
+  $result = mysqli_query( $link2, $query );
   if ( ! $result )
-    echo "Query failed : $query\n" . mysql_error();
+    echo "Query failed : $query\n" . mysqli_error($link2);
 
   if ( in_array( 'gegorbet@gmail.com', $email_list ) )
   {
@@ -535,15 +535,15 @@ function add_admins( $link2 )
               "zip           = '59812', " .
               "country       = 'US', " .
               "phone         = '832-466-9211', " .
-              "password      = MD5(''), " .                # password must be set
+              "password      = '$md5_super', "  .
               "organization  = 'University of Montana', " .
               "username      = 'us3gorbet', " .
               "activated     = 1, " .
               "userlevel     = 4 " .
               $where ;
-  $result = mysql_query( $query, $link2 );
+  $result   = mysqli_query( $link2, $query );
   if ( ! $result )
-    echo "Query failed : $query\n" . mysql_error();
+    echo "Query failed : $query\n" . mysqli_error($link2);
 
 }
 

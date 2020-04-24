@@ -9,6 +9,7 @@
 include 'config.php';
 include 'db.php';
 include 'lib/utility.php';
+global $link;
 
 $email_address = stripslashes( $_POST['email_address'] );
 
@@ -24,9 +25,9 @@ if ( ! $email_address )
 $query = "SELECT personID, activated FROM people " .
          "WHERE email='$email_address'";
 
-$result    = mysql_query($query);
-$row_count = mysql_num_rows($result);
-$row       = mysql_fetch_row($result);
+$result    = mysqli_query( $link, $query );
+$row_count = mysqli_num_rows($result);
+$row       = mysqli_fetch_row($result);
 
 if ( $row_count == 0 )
 {
@@ -57,8 +58,8 @@ $db_password = md5($random_password);
 $query = "UPDATE people " .
          "SET password='$db_password' " .
          "WHERE personID='$personID'";
-mysql_query($query) 
-      or die("Query failed : $query" . mysql_error());
+mysqli_query( $link, $query ) 
+      or die("Query failed : $query" . mysqli_error($link));
 
 $subject = "System Password";
 $message = "We have reset your password at your request.

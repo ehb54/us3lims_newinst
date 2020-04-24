@@ -47,15 +47,15 @@ function makeRandomPassword() {
 }
 
 // Function to email login information to the administrator
-function email_login_info( $metadataID )
+function email_login_info( $metadataID, $link )
 {
   $query  = "SELECT admin_fname, admin_lname, dbname, dbhost, limshost, " .
             "admin_email AS email, admin_pw, " .
             "secure_user, secure_pw " .
             "FROM metadata " .
             "WHERE metadataID = $metadataID ";
-  $result = mysql_query($query) 
-            or die("Query failed : $query<br />\n" . mysql_error());
+  $result = mysqli_query( $link, $query ) 
+            or die("Query failed : $query<br />\n" . mysqli_error($link));
 
   list( $fname,
         $lname,
@@ -65,7 +65,7 @@ function email_login_info( $metadataID )
         $email,
         $admin_pw,
         $new_secureuser,
-        $new_securepw )   = mysql_fetch_array( $result );
+        $new_securepw )   = mysqli_fetch_array( $result );
 
   $hints = <<<TEXT
 Database Setup Information

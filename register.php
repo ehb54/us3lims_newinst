@@ -9,6 +9,7 @@
 include 'config.php';
 include 'db.php';
 include 'lib/utility.php';
+global $link;
 
 // Get the information the new user posted
 include 'get_user_info.php';
@@ -25,8 +26,8 @@ if ( ! empty($message) )
 
 // Ensure that the user's email address or username does not exist in the DB
 $query        = "SELECT count(*) FROM people WHERE email='$email'";
-$result       = mysql_query($query);
-list($count)  = mysql_fetch_row($result);
+$result       = mysqli_query( $link, $query );
+list($count)  = mysqli_fetch_row($result);
  
 if ( $count > 0 )
 {
@@ -67,9 +68,9 @@ $query = "INSERT INTO people " .
          "userlevel       = 0, " .
          "activated       = 0, " .
          "signup          = now() ";
-$result = mysql_query($query) 
-          or die( "Query failed : $query<br/>" . mysql_error() );
-$userid = mysql_insert_id();
+$result = mysqli_query( $link, $query ) 
+          or die( "Query failed : $query<br/>" . mysqli_error($link) );
+$userid = mysqli_insert_id( $link );
 
 if ( ! $result )
 {
