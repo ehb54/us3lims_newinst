@@ -4,6 +4,8 @@
 
 */
 
+$cfgfile            = exec( "ls ~us3/lims/.us3lims.ini" );
+$configs            = parse_ini_file( $cfgfile, true );
 $org_name           = 'UltraScan3 LIMS New Instance Setup';
 $org_site           = 'uslims.uleth.ca/uslims3_newlims';
 $site_author        = 'Borries Demeler, University of Texas Health Science Center';
@@ -16,13 +18,13 @@ $admin_phone        = 'Office: (210) 767-2761<br />Fax: (210) 567-6595';
 $admin_email        = 'gegorbet@gmail.com';
 
 $dbusername         = 'new_us3user';  # the name of the MySQL user
-$dbpasswd           = '';  # the password for the MySQL user # password must be set
+$dbpasswd           = $configs[ 'newus3' ][ 'password' ]; # the password for the MySQL user
 $dbname             = 'newus3';  # the name of the database
 $dbhost             = 'localhost'; # the host on which MySQL runs, generally localhost
 
 // Global DB
 $globaldbuser       = 'gfac';  # the name of the MySQL user
-$globaldbpasswd     = '';  # the password for the MySQL user # password must be set
+$globaldbpasswd     = $configs[ 'gfac' ][ 'password' ];   # the password for the MySQL user
 $globaldbname       = 'gfac';  # the name of the database
 $globaldbhost       = 'localhost'; # the host on which MySQL runs, generally localhost
 
@@ -30,8 +32,8 @@ $ipaddr             = '129.111.140.156'; # the external IP address of the host m
 $udpport            = 12233; # the port to send udp messages to
 $svcport            = 8080;  # the port for GFAC/Airavata services
 $uses_thrift        = true;  # flags use of Thrift rather than Gfac
-$thr_clust_excls    = array( 'jacinto' );           # Never uses Thrift
-$thr_clust_incls    = array( 'alamo' );             # Always uses Thrift
+$thr_clust_excls    = array( 'us3iab-node0' );           # Never uses Thrift
+$thr_clust_incls    = array( 'comet' );             # Always uses Thrift
 
 $top_image          = '#';  # name of the logo to use
 $top_banner         = 'images/#';  # name of the banner at the top
@@ -39,15 +41,15 @@ $top_banner         = 'images/#';  # name of the banner at the top
 $full_path          = '/srv/www/htdocs/uslims3/uslims3_newlims/';  # Location of the system code
 $data_dir           = '/srv/www/htdocs/uslims3/uslims3_newlims/data/'; # Full path
 $dest_path          = '/srv/www/htdocs/uslims3/';  # Where new databases go
-$output_dir         = '/export/home/us3/database/instances/'; # Where db creation files will go
+$output_dir         = '/export/home/us3/lims/database/instances/'; # Where db creation files will go
 $class_dir          = '/srv/www/htdocs/common/class/';        # Production class path
 //$class_dir          = '/srv/www/htdocs/common/class_devel/';  # Development class path
-$sql_dir            = '/export/home/us3/database/sql/'; # Where the sql script files are
+$sql_dir            = '/export/home/us3/lims/database/sql/'; # Where the sql script files are
 $disclaimer_file    = ''; # the name of a text file with disclaimer info
 
 // Dates
 date_default_timezone_set( 'America/Chicago' );
-$last_update        = '2020/04/11'; # the date the website was last updated
+$last_update        = '2020/04/28'; # the date the website was last updated
 $copyright_date     = '2020'; # copyright date
 $current_year       = date( 'Y' );
 
@@ -75,3 +77,4 @@ if ( ! defined('DEBUG') )
 }
 
 ?>
+

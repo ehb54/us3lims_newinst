@@ -24,7 +24,7 @@ if ( ($_SESSION['userlevel'] != 4) &&
 include 'config.php';
 include 'db.php';
 include 'lib/utility.php';
-global $link;
+global $link, $configs;
 
 // Start displaying page
 $page_title = "Create DB Instance";
@@ -140,11 +140,11 @@ TEXT;
 -- Establishes the grants needed for the $institution database
 --
 
-GRANT ALL ON $new_dbname.* TO $new_dbuser@localhost IDENTIFIED BY '$new_dbpasswd';
-GRANT ALL ON $new_dbname.* TO $new_dbuser@'%' IDENTIFIED BY '$new_dbpasswd';
-GRANT EXECUTE ON $new_dbname.* TO $new_secureuser@'%' IDENTIFIED BY '$new_securepw' REQUIRE SSL;
-GRANT ALL ON $new_dbname.* TO us3php@localhost;
-GRANT ALL ON $new_dbname.* TO us3php@$new_dbhost;
+GRANT ALL ON $new_dbname.* TO '$new_dbuser'@'localhost' IDENTIFIED BY '$new_dbpasswd';
+GRANT ALL ON $new_dbname.* TO '$new_dbuser'@'%' IDENTIFIED BY '$new_dbpasswd';
+GRANT EXECUTE ON $new_dbname.* TO '$new_secureuser'@'%' IDENTIFIED BY '$new_securepw' REQUIRE SSL;
+GRANT ALL ON $new_dbname.* TO 'us3php'@'localhost';
+GRANT ALL ON $new_dbname.* TO 'us3php'@'$new_dbhost';
 
 TEXT;
 
@@ -235,7 +235,7 @@ function do_step2()
 DIR=\$(pwd)
 htmldir="/srv/www/htdocs/uslims3"
 
-git checkout http://github.com/ehb54/us3lims_dbinst.git \$htmldir/$new_dbname
+git clone http://github.com/ehb54/us3lims_dbinst.git \$htmldir/$new_dbname
 mkdir \$htmldir/$new_dbname/data
 #sudo chgrp apache \$htmldir/$new_dbname/data
 chmod g+w \$htmldir/$new_dbname/data
@@ -276,9 +276,9 @@ TEXT;
     <tr><th>DB User Password:</th><td>$new_dbpasswd</td></tr>
     <tr><th>Server name:</th><td>$new_dbhost</td></tr>
     <tr><th>Global DB User:</th><td>gfac</td></tr>
-    <tr><th>Global DB password:</th><td>PASSW_GF</td></tr>
+    <tr><th>Global DB password:</th><td>\$configs[ 'gfac' ][ 'password' ]</td></tr>
     <tr><th>Global DB name:</th><td>gfac</td></tr>
-    <tr><th>Global DB host:</th><td>uslims3.uthscsa.edu</td></tr>
+    <tr><th>Global DB host:</th><td>dev1-linux</td></tr>
   </table>
 
   <p>The database instance has been created.</p>
@@ -436,9 +436,9 @@ function setup_DB( $metadataID )
 // Function to add the us3 admins to the current database
 function add_admins( $link2 )
 {
+  global $configs;
   // Start queries
-  $mp_cmd    = exec( "ls ~us3/scripts/map_password" );
-  $md5_super = exec( "$mp_cmd PASSW_SU MD5" );
+  $md5_super  = $configs[ 'superuser' ][ 'md5' ];
   $email_list = array();
   $query  = "SELECT email FROM people ";
   $result = mysqli_query( $link2, $query );

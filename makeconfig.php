@@ -79,6 +79,8 @@ $text = <<<TEXT
 
 */
 
+\$cfgfile            = exec( "ls ~us3/lims/.us3lims.ini" );
+\$configs            = parse_ini_file( \$cfgfile, true );
 \$org_name           = 'UltraScan3 LIMS portal';
 \$org_site           = '$new_orgsite/$new_dbname';
 \$site_author        = 'Borries Demeler, University of Lethbridge';
@@ -101,7 +103,7 @@ $text = <<<TEXT
 
 // Global DB
 \$globaldbuser       = 'gfac';  # the name of the MySQL user
-\$globaldbpasswd     = 'PASSW_GF';  # password must be mapped from key
+\$globaldbpasswd     = \$configs[ 'gfac' ][ 'password' ]; # the password for the MySQL user
 \$globaldbname       = 'gfac';  # the name of the database
 \$globaldbhost       = 'localhost'; # the host on which MySQL runs, generally localhost
 
@@ -166,3 +168,4 @@ else
 }
 
 ?>
+
