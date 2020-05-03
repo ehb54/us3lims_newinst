@@ -206,7 +206,7 @@ HTML;
 
 function do_step2()
 {
-  global $link;
+  global $link, $globaldbuser, $globaldbpasswd, $globaldbname, $globaldbhost;
   $metadataID = $_POST['metadataID'];
 
   setup_DB( $metadataID );
@@ -275,10 +275,10 @@ TEXT;
     <tr><th>Database user:</th><td>$new_dbuser</td></tr>
     <tr><th>DB User Password:</th><td>$new_dbpasswd</td></tr>
     <tr><th>Server name:</th><td>$new_dbhost</td></tr>
-    <tr><th>Global DB User:</th><td>gfac</td></tr>
-    <tr><th>Global DB password:</th><td>\$configs[ 'gfac' ][ 'password' ]</td></tr>
-    <tr><th>Global DB name:</th><td>gfac</td></tr>
-    <tr><th>Global DB host:</th><td>dev1-linux</td></tr>
+    <tr><th>Global DB User:</th><td>$globaldbuser</td></tr>
+    <tr><th>Global DB password:</th><td>$globaldbpasswd</td></tr>
+    <tr><th>Global DB name:</th><td>$globaldbname</td></tr>
+    <tr><th>Global DB host:</th><td>$globaldbhost</td></tr>
   </table>
 
   <p>The database instance has been created.</p>
