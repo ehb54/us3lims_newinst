@@ -4,7 +4,8 @@
 
 */
 
-$cfgfile            = exec( "ls ~us3/lims/.us3lims.ini" );
+$us3base            = exec( "ls -d ~us3/lims/" );
+$cfgfile            = $us3base . '.us3lims.ini';
 $configs            = parse_ini_file( $cfgfile, true );
 $org_name           = 'UltraScan3 LIMS New Instance Setup';
 $org_site           = 'uslims.uleth.ca/uslims3_newlims';
@@ -41,15 +42,16 @@ $top_banner         = 'images/#';  # name of the banner at the top
 $full_path          = '/srv/www/htdocs/uslims3/uslims3_newlims/';  # Location of the system code
 $data_dir           = '/srv/www/htdocs/uslims3/uslims3_newlims/data/'; # Full path
 $dest_path          = '/srv/www/htdocs/uslims3/';  # Where new databases go
-$output_dir         = '/export/home/us3/lims/database/instances/'; # Where db creation files will go
+$output_dir         = $us3base . 'database/instances/';       # Where db creation files will go
 $class_dir          = '/srv/www/htdocs/common/class/';        # Production class path
 //$class_dir          = '/srv/www/htdocs/common/class_devel/';  # Development class path
-$sql_dir            = '/export/home/us3/lims/database/sql/'; # Where the sql script files are
+//$class_dir          = '/srv/www/htdocs/common/class_local/';  # Local class path
+$sql_dir            = $us3base . 'database/sql/'; # Where the sql script files are
 $disclaimer_file    = ''; # the name of a text file with disclaimer info
 
 // Dates
 date_default_timezone_set( 'America/Chicago' );
-$last_update        = '2020/04/28'; # the date the website was last updated
+$last_update        = '2020/05/03'; # the date the website was last updated
 $copyright_date     = '2020'; # copyright date
 $current_year       = date( 'Y' );
 
