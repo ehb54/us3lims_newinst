@@ -123,6 +123,7 @@ $text = <<<TEXT
 \$submit_dir         = '/srv/www/htdocs/uslims3/uslims3_data/'; # Full path
 \$class_dir          = '/srv/www/htdocs/common/class/';       # Production class path
 //\$class_dir          = '/srv/www/htdocs/common/class_devel/'; # Development class path
+//\$class_dir          = '/srv/www/htdocs/common/class_local/'; # Local class path
 \$disclaimer_file    = ''; # the name of a text file with disclaimer info
 
 // Dates
