@@ -21,7 +21,6 @@ $captcha = $_SESSION['captcha'];
 // alternatively we could use fontconfig to look it up - but this way seems simple enough
 
 $font_check = [
-    '/usr/share/fonts/liberation/testing.ttf',
     '/usr/share/fonts/liberation/LiberationSans-BoldItalic.ttf',
     '/usr/share/fonts/liberation-sans/LiberationSans-BoldItalic.ttf',
     '/usr/share/fonts/truetype/liberation/LiberationSans-BoldItalic.ttf'
