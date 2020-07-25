@@ -20,11 +20,11 @@ $captcha = $_SESSION['captcha'];
 // add any number of paths here
 // alternatively we could use fontconfig to look it up - but this way seems simple enough
 
-$font_check = [
+$font_check = array(
     '/usr/share/fonts/liberation/LiberationSans-BoldItalic.ttf',
     '/usr/share/fonts/liberation-sans/LiberationSans-BoldItalic.ttf',
     '/usr/share/fonts/truetype/liberation/LiberationSans-BoldItalic.ttf'
-    ];
+    );
 
 $font = "font_missing";
 
