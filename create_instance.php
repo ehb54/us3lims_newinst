@@ -545,6 +545,38 @@ function add_admins( $link2 )
   if ( ! $result )
     echo "Query failed : $query\n" . mysqli_error($link2);
 
+  if ( in_array( 'emre.brookes@umontana.edu', $email_list ) )
+  {
+    $query  = "UPDATE people SET ";
+    $where  = "WHERE email   = 'emre.brookes@umontana.edu' ";
+  }
+
+  else
+  {
+    $guid   = uuid();
+    $query  = "INSERT INTO people SET " .
+              "personGUID    = '$guid', " .
+              "email = 'emre.brookes@umontanan.edu', ";
+    $where  = "";
+  }
+
+  $query   .= "fname         = 'Emre', " .
+              "lname         = 'Brookes', " .
+              "address       = '32 Campus Drive', " .
+              "city          = 'Missoula', " .
+              "state         = 'MT', " .
+              "zip           = '59812', " .
+              "country       = 'US', " .
+              "phone         = '406-203-0055', " .
+              "password      = '$md5_super', "  .
+              "organization  = 'University of Montana', " .
+              "username      = 'us3brookes', " .
+              "activated     = 1, " .
+              "userlevel     = 4 " .
+              $where ;
+  $result   = mysqli_query( $link2, $query );
+  if ( ! $result )
+    echo "Query failed : $query\n" . mysqli_error($link2);
 }
 
 ?>
