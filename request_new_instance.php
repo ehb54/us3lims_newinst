@@ -305,7 +305,7 @@ function email_admin( $institution )
   include 'get_meta_info.php';
 
 
-  $email = 'demeler@gmail.com,alexsav.science@gmail.com,gegorbet@gmail.com';
+  $email = 'demeler@gmail.com,alexsav.science@gmail.com,gegorbet@gmail.com,emre.brookes@umontana.edu';
 
   $now = time();
   $subject = "A new UltraScan III instance has been requested - $now";
