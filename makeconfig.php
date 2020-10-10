@@ -121,9 +121,9 @@ $text = <<<TEXT
 \$full_path          = '$dest_path$new_dbname/';  # Location of the system code
 \$data_dir           = '$dest_path$new_dbname/data/'; # Full path
 \$submit_dir         = '/srv/www/htdocs/uslims3/uslims3_data/'; # Full path
-\$class_dir          = '/srv/www/htdocs/common/class/';       # Production class path
+//\$class_dir          = '/srv/www/htdocs/common/class/';       # Production class path
 //\$class_dir          = '/srv/www/htdocs/common/class_devel/'; # Development class path
-//\$class_dir          = '/srv/www/htdocs/common/class_local/'; # Local class path
+\$class_dir          = '/srv/www/htdocs/common/class_local/'; # Local class path
 \$disclaimer_file    = ''; # the name of a text file with disclaimer info
 
 // Dates
@@ -154,6 +154,10 @@ if ( ! defined('DEBUG') )
 {
   define('DEBUG', false );
 }
+
+\$is_cli = php_sapi_name() == 'cli';
+
+include_once "elog.php";
 
 ?>
 TEXT;
