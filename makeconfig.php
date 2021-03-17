@@ -155,6 +155,10 @@ if ( ! defined('DEBUG') )
   define('DEBUG', false );
 }
 
+\$is_cli = php_sapi_name() == 'cli';
+
+include_once "elog.php";
+
 ?>
 TEXT;
 

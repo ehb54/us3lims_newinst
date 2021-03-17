@@ -23,6 +23,7 @@ $fields = array( 'institution',
                  'admin_fname',
                  'admin_lname',
                  'admin_email',
+                 'req_admin_email',
                  'lab_name',
                  'lab_contact',
                  'location',
@@ -72,6 +73,7 @@ function do_create()
   global $link;
   global $org_site;
   include 'get_meta_info.php';
+  $req_admin_email = $admin_email;
   include 'config.php';
   $admin_pw1    = trim(substr(addslashes(htmlentities($_POST['admin_pw1'])), 0,80));
   $admin_pw2    = trim(substr(addslashes(htmlentities($_POST['admin_pw2'])), 0,80));
@@ -125,7 +127,7 @@ function do_create()
              "limshost = '$limshost', " .
              "admin_fname  = '$admin_fname', " .
              "admin_lname  = '$admin_lname', " .
-             "admin_email  = '$admin_email', " .
+             "admin_email  = '$req_admin_email', " .
              "admin_pw  = '$admin_pw1', " .
              "lab_name  = '$lab_name', " .
              "lab_contact  = '$lab_contact', " .
@@ -176,7 +178,7 @@ echo<<<HTML
       <tr><th>Last Name:</th>
           <td>$admin_lname</td></tr>
       <tr><th>Email:</th>
-          <td>$admin_email</td></tr>
+          <td>$req_admin_email</td></tr>
       <tr><th colspan='2'>Information about the Facility</th></tr>
       <tr><th>The Facility Name:</th>
           <td>$lab_name</td></tr>
@@ -233,7 +235,7 @@ echo<<<HTML
                    maxlength='30' value='$admin_lname' /></td></tr>
     <tr><th>Email:</th>
         <td><input type='text' name='admin_email' size='40'
-                   maxlength='63' value='$admin_email' /></td></tr>
+                   maxlength='63' value='$req_admin_email' /></td></tr>
     <tr><th>Administrator&rsquo;s LIMS Password:</th>
         <td><input type='password' name='admin_pw1' size='40'
                    maxlength='80' /></td></tr>
@@ -243,7 +245,7 @@ echo<<<HTML
     <tr><th colspan='2'>Information about the Facility</th></tr>
     <tr><th>The Facility Name:</th>
         <td><input type='text' name='lab_name' size='40' 
-                   maxlength='80' /></td></tr>
+                   maxlength='80' value='$lab_name' /></td></tr>
     <tr><th>Facility Contact Information:</th>
         <td><textarea name='lab_contact' rows='6' cols='65' 
                       wrap='virtual'>$lab_contact</textarea></td></tr>

@@ -246,6 +246,14 @@ new_ipaddress=$(resolveip -s `hostname`)
 #Now make the config.php file
 php $makeconfigfile $new_dbname \$new_orgsite \$new_ipaddress
 vi \$htmldir/$new_dbname/config.php
+
+echo "setting default cluster authorizations"
+echo php ~us3/lims/bin/set_cluster_authorizations.php $new_dbname updatepeople
+php ~us3/lims/bin/set_cluster_authorizations.php $new_dbname updatepeople
+
+echo "restarting services for enabling of autoflow"
+echo php ~us3/lims/bin/services.php restart
+php ~us3/lims/bin/services.php restart
 TEXT;
 
   global $output_dir;
@@ -556,7 +564,7 @@ function add_admins( $link2 )
     $guid   = uuid();
     $query  = "INSERT INTO people SET " .
               "personGUID    = '$guid', " .
-              "email = 'emre.brookes@umontanan.edu', ";
+              "email = 'emre.brookes@umontana.edu', ";
     $where  = "";
   }
 
