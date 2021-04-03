@@ -60,7 +60,7 @@ exit();
 // Function to update the current record
 function do_update()
 {
-  global $link,
+  global $link;
   $ID  = $_SESSION['id'];
   include 'get_user_info.php';
   $pw1 = trim(substr(addslashes(htmlentities($_POST['pw1'])), 0,128));
