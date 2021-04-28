@@ -235,7 +235,7 @@ function do_step2()
 DIR=\$(pwd)
 htmldir="/srv/www/htdocs/uslims3"
 
-git clone http://github.com/ehb54/us3lims_dbinst.git \$htmldir/$new_dbname
+git clone https://github.com/ehb54/us3lims_dbinst.git \$htmldir/$new_dbname
 mkdir \$htmldir/$new_dbname/data
 #sudo chgrp apache \$htmldir/$new_dbname/data
 chmod g+w \$htmldir/$new_dbname/data
