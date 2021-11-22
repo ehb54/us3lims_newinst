@@ -145,6 +145,7 @@ GRANT ALL ON $new_dbname.* TO '$new_dbuser'@'%' IDENTIFIED BY '$new_dbpasswd';
 GRANT EXECUTE ON $new_dbname.* TO '$new_secureuser'@'%' IDENTIFIED BY '$new_securepw' REQUIRE SSL;
 GRANT ALL ON $new_dbname.* TO 'us3php'@'localhost';
 GRANT ALL ON $new_dbname.* TO 'us3php'@'$new_dbhost';
+GRANT SELECT,INSERT,UPDATE on $new_dbname.* to 'gfac'@'localhost';
 
 TEXT;
 
