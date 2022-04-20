@@ -1,0 +1,53 @@
+<?php
+# cluster configuration
+
+$cluster_configuration = [
+    "anvil" => [
+        "active"  => false
+    ]
+    ,"anvil-gamc" => [
+        "active"  => false
+    ]
+    ,"bridges2" => [
+        "active"  => false
+    ]
+    ,"bridges2-gamc" => [
+        "active"  => false
+    ]
+    ,"chinook-local" => [
+        "active"  => false
+    ]
+    ,"expanse" => [
+        "active"  => false
+    ]
+    ,"expanse-gamc" => [
+        "active"  => false
+    ]
+    ,"demeler1-local" => [
+        "active"  => false
+    ]
+    ,"demeler9-local" => [
+        "active"  => false
+    ]
+    ,"jetstream" => [
+        "active"  => false
+    ]
+    ,"lonestar6-gamc" => [
+        "active"  => false
+    ]
+    ,"stampede2" => [
+        "active"  => false
+    ]
+    ,"umontana-local" => [
+        "active"  => false
+    ]
+    ,"us3iab-devel" => [
+        "active"  => false
+    ]
+    ,"us3iab-node0" => [
+        "active"  => true
+    ]
+    ,"us3iab-node1" => [
+        "active"  => false
+    ]
+    ];
