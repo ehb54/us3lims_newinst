@@ -5,6 +5,9 @@ $cluster_configuration = [
     "anvil" => [
         "active"  => false
     ]
+    ,"anvil-bigmem" => [
+        "active"  => false
+    ]
     ,"anvil-gamc" => [
         "active"  => false
     ]
@@ -18,6 +21,9 @@ $cluster_configuration = [
         "active"  => false
     ]
     ,"expanse" => [
+        "active"  => false
+    ]
+    ,"expanse-bigmem" => [
         "active"  => false
     ]
     ,"expanse-gamc" => [
