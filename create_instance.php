@@ -337,7 +337,7 @@ function setup_DB( $metadataID )
             "password = '$admin_pw_hash', " .
             "organization = '$institution', " .
             "activated = true, " .
-            "userlevel = 3 ";
+            "userlevel = 0 ";
   mysqli_query($link2,$query) 
         or die("Query failed : $query<br />\n" . mysqli_error($link2));
   $admin_id = mysqli_insert_id($link2);
