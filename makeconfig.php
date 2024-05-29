@@ -132,6 +132,8 @@ date_default_timezone_set( 'America/Chicago' );
 \$copyright_date     = '$year'; # copyright date
 \$current_year       = date( 'Y' );
 
+\$enable_PAM         = false;
+
 //////////// End of user specific configuration
 
 // ensure a trailing slash
@@ -159,7 +161,6 @@ if ( ! defined('DEBUG') )
 
 include_once "elog.php";
 
-?>
 TEXT;
 
 if ( file_exists( $dest_path . $new_dbname ) )
