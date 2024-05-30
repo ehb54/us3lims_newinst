@@ -132,6 +132,7 @@ date_default_timezone_set( 'America/Chicago' );
 \$copyright_date     = '$year'; # copyright date
 \$current_year       = date( 'Y' );
 
+\$enable_GMP         = false;
 \$enable_PAM         = false;
 
 //////////// End of user specific configuration
