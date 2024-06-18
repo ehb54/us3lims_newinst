@@ -133,6 +133,11 @@ date_default_timezone_set( 'America/Chicago' );
 \$current_year       = date( 'Y' );
 
 \$enable_GMP         = false;
+  
+// Important - if $enable_PAM is changed, make sure to run
+  // from directory ~us3/lims/database/utilities
+  // 1. php uslims_permissions.php --grant-integrity uslims3_Demo --all-users --grant-integrity-fix
+  // 2. php uslims_permissions.php --grant-integrity uslims3_Demo --grant-integrity-fix
 \$enable_PAM         = false;
 
 //////////// End of user specific configuration
