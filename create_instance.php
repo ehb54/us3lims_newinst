@@ -337,7 +337,8 @@ function setup_DB( $metadataID )
             "password = '$admin_pw_hash', " .
             "organization = '$institution', " .
             "activated = true, " .
-            "userlevel = 0 ";
+            "userlevel = 0, " .
+            "userNamePAM = '$admin_email' ";
   mysqli_query($link2,$query) 
         or die("Query failed : $query<br />\n" . mysqli_error($link2));
   $admin_id = mysqli_insert_id($link2);
@@ -482,7 +483,8 @@ function add_admins( $link2 )
               "organization  = 'University of Montana', " .
               "username      = 'us3demeler', " .
               "activated     = 1, " .
-              "userlevel     = 4 " .
+              "userlevel     = 4, " .
+              "userNamePAM   = 'demeler@gmail.com' " .
               $where ;
   $result   = mysqli_query( $link2, $query );
   if ( ! $result )
@@ -515,7 +517,8 @@ function add_admins( $link2 )
               "organization  = 'University of Montana', " .
               "username      = 'us3savelyev', " .
               "activated     = 1, " .
-              "userlevel     = 5 " .
+              "userlevel     = 5, " .
+              "userNamePAM   = 'alexsav.science@gmail.com' " .
               $where ;
   $result = mysqli_query( $link2, $query );
   if ( ! $result )
@@ -548,7 +551,8 @@ function add_admins( $link2 )
               "organization  = 'University of Montana', " .
               "username      = 'us3gorbet', " .
               "activated     = 1, " .
-              "userlevel     = 4 " .
+              "userlevel     = 4, " .
+              "userNamePAM   = 'gegorbet@gmail.com' " .
               $where ;
   $result   = mysqli_query( $link2, $query );
   if ( ! $result )
@@ -581,11 +585,10 @@ function add_admins( $link2 )
               "organization  = 'University of Montana', " .
               "username      = 'us3brookes', " .
               "activated     = 1, " .
-              "userlevel     = 4 " .
+              "userlevel     = 4, " .
+              "userNamePAM   = 'emre.brookes@umontana.edu' " .
               $where ;
   $result   = mysqli_query( $link2, $query );
   if ( ! $result )
     echo "Query failed : $query\n" . mysqli_error($link2);
 }
-
-?>
