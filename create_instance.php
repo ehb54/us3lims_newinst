@@ -229,6 +229,13 @@ function do_step2()
   global $full_path;
   $makeconfigfile = $full_path . 'makeconfig.php';
  
+  $branch_cmd = "";
+  $cnfpath = exec( "ls ~us3/lims/database/utils/db_config.php" );
+  if ( file_exists( $cnfpath ) ) {
+     include $cnfpath;
+     $branch_cmd = "&& git checkout " . $repo_branches[ "https://github.com/ehb54/us3lims_dbinst.git" ];
+  }
+
   $setupLIMS = <<<TEXT
 #!/bin/bash
 # A script to create the $institution LIMS
@@ -237,6 +244,7 @@ DIR=\$(pwd)
 htmldir="/srv/www/htdocs/uslims3"
 
 git clone https://github.com/ehb54/us3lims_dbinst.git \$htmldir/$new_dbname
+( cd \$htmldir/$new_dbname $branch_cmd )
 mkdir \$htmldir/$new_dbname/data
 #sudo chgrp apache \$htmldir/$new_dbname/data
 chmod g+w \$htmldir/$new_dbname/data
