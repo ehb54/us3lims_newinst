@@ -81,9 +81,7 @@ HTML;
     echo <<<HTML
       <h4>General</h4>
       <a href='http://$org_site/profile.php?edit=12'>Change My Info</a>
-      <a href="partners.php">Partners</a>
       <a href="contacts.php">Contacts</a>
-      <a href="mailto:demeler@gmail.com">Webmaster</a>
       <a href='http://$org_site/logout.php'>Logout</a>
 
 HTML;
@@ -94,9 +92,7 @@ HTML;
   {
       echo <<<HTML
       <a href="request_new_instance.php">Request Instance</a>
-      <a href="partners.php">Partners</a>
       <a href="contacts.php">Contacts</a>
-      <a href="mailto:demeler@gmail.com">Webmaster</a>
       <a href='https://$org_site/login.php'>Login</a>
 
 HTML;
