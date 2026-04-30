@@ -132,7 +132,7 @@ date_default_timezone_set( 'America/Chicago' );
 \$copyright_date     = '$year'; # copyright date
 \$current_year       = date( 'Y' );
 
-\$enable_GMP         = false;
+\$enable_GMP         = true;
   
 // Important - if \$enable_PAM is changed, make sure to run
   // from directory ~us3/lims/database/utilities
