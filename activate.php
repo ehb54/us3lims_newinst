@@ -23,13 +23,13 @@ settype( $userid, 'int' );       // Removes any remaining characters in URL
 $code   = $_GET['code'];
 
 $query = "UPDATE people SET activated = 1 " .
-         "WHERE personID=$userid AND password='$code'";
+         "WHERE personID=$userid AND password='$code' AND activated = 0 AND account_enabled = 1";
 mysqli_query($link,$query) 
       or die ("Query failed : $query<br/>" . mysqli_error($link));
 
 $query = "SELECT count(*) FROM people " .
          "WHERE personID='$userid' "    .
-         "AND password='$code' AND activated = 1";
+         "AND password='$code' AND activated = 1 AND account_enabled = 1";
 $result = mysqli_query( $link, $query ) 
           or die ( "Query failed : $query<br />" . mysqli_error($link) );
 list( $doublecheck ) = mysqli_fetch_row( $result );
