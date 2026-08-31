@@ -67,7 +67,6 @@ $query = "INSERT INTO people " .
          "password        = '$db_password', " .
          "userlevel       = 0, " .
          "activated       = 0, " .
-         "userNamePAM     = '$email', " .
          "signup          = now() ";
 $result = mysqli_query( $link, $query ) 
           or die( "Query failed : $query<br/>" . mysqli_error($link) );
