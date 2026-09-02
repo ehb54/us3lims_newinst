@@ -110,10 +110,6 @@ $text = <<<TEXT
 \$ipaddr             = '$new_ipaddress'; # the primary IP address of the host machine
 \$ipa_ext            = '$new_ipaddress'; # the external IP address of the host machine
 \$udpport            = 12233; # the port to send udp messages to
-\$svcport            = 8080;  # the port for GFAC/Airavata services
-\$uses_thrift        = true;  # flags use of Thrift rather than Gfac
-\$thr_clust_excls    = array( 'us3iab-node0' ); # Never uses Thrift
-\$thr_clust_incls    = array( 'comet' ); # Always uses Thrift
 
 \$top_image          = '#';  # name of the logo to use
 \$top_banner         = 'images/#';  # name of the banner at the top
