@@ -26,16 +26,27 @@ if ( ($_SESSION['userlevel'] != 4) &&
 include 'config.php';
 include 'db.php';
 
+// The legacy mode remains the default for existing operational callers.
+$base_overlay_mode = $_SERVER['argc'] == 5 &&
+                     $_SERVER['argv'][4] == '--base-overlay';
+
 // Make sure there is a parameter
-if ( $_SERVER['argc'] != 4 )
+if ( $_SERVER['argc'] != 4 && !$base_overlay_mode )
 {
-  echo "Usage: php makeconfig.php <db_name> <orgsite> <ipaddress>\n";
+  echo "Usage: php makeconfig.php <db_name> <orgsite> <ipaddress> [--base-overlay]\n";
   exit();
 }
 
 $new_dbname     = $_SERVER['argv'][1];
 $new_orgsite    = $_SERVER['argv'][2];
 $new_ipaddress  = $_SERVER['argv'][3];
+
+if ( $base_overlay_mode &&
+     !preg_match( '/^uslims3_[A-Za-z0-9_]+$/', $new_dbname ) )
+{
+  fwrite( STDERR, "Invalid db_name for base-overlay configuration\n" );
+  exit( 1 );
+}
 
 
 $query  = "SELECT institution, dbuser, dbpasswd, dbhost, " .
@@ -70,6 +81,43 @@ $year   = date( "Y" );
 
 #$lab_contact = preg_replace( "/\r|\n/", "<br />", $lab_contact );
 $lab_contact = preg_replace( "/\r/", "<br />", $lab_contact );
+
+if ( $base_overlay_mode )
+{
+  require_once __DIR__ . '/lib/dbinst_config_generator.php';
+
+  $config_root = '/home/us3/lims/etc/config';
+  $dbinst_dir = rtrim( $dest_path, '/' ) . '/' . $new_dbname;
+  us3_newinst_require_dbinst_loader( $dbinst_dir );
+
+  $base_values = us3_dbinst_config_load_base( $config_root );
+  if ( $base_values[ 'ipaddr' ] !== $new_ipaddress &&
+       $base_values[ 'ipa_ext' ] !== $new_ipaddress )
+    us3_newinst_config_fail(
+      'the requested host address matches neither v1 base ipaddr nor ipa_ext' );
+
+  $overlay_values = array(
+    'org_site'       => "$new_orgsite/$new_dbname",
+    'admin'          => "$admin_fname $admin_lname",
+    'admin_phone'    => $lab_contact,
+    'admin_email'    => $admin_email,
+    'dbusername'     => $new_dbuser,
+    'dbpasswd'       => $new_dbpasswd,
+    'dbname'         => $new_dbname,
+    // Preserve existing makeconfig.php behavior: dbinst web access is local.
+    'dbhost'         => 'localhost',
+    'secure_user'    => $secure_user,
+    'secure_pw'      => $secure_pw,
+    'last_update'    => $today,
+    'copyright_date' => $year
+  );
+
+  $written = us3_newinst_write_base_overlay(
+    $new_dbname, $overlay_values, $config_root, $dbinst_dir );
+  echo "Created " . $written[ 'overlay' ] . "\n";
+  echo "Created " . $written[ 'shim' ] . "\n";
+  exit();
+}
 
 // create config.php script
 $text = <<<TEXT
@@ -174,4 +222,3 @@ else
 
   file_put_contents( $data_dir . 'config.php', $text );
 }
-
