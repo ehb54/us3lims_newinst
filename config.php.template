@@ -4,7 +4,12 @@
 
 */
 
-$us3base            = exec( "ls -d ~us3/lims/" );
+// Resolve the us3 user's home dir via posix_getpwnam() instead of shelling
+// out to `ls` -- SELinux's httpd_t domain is not permitted to execute a
+// shell (entrypoint on shell_exec_t), so exec() silently failed here under
+// an Enforcing appliance, leaving $us3base empty and breaking every login.
+$us3pwentry         = posix_getpwnam( 'us3' );
+$us3base            = $us3pwentry ? $us3pwentry['dir'] . '/lims/' : '';
 $cfgfile            = $us3base . '.us3lims.ini';
 $configs            = parse_ini_file( $cfgfile, true );
 $org_name           = 'UltraScan3 LIMS New Instance Setup';
