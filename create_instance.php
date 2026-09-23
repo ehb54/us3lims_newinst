@@ -252,9 +252,16 @@ chmod g+w \$htmldir/$new_dbname/data
 new_orgsite=$(hostname)
 new_ipaddress=$(resolveip -s `hostname`)
 
-#Now make the config.php file
-php $makeconfigfile $new_dbname \$new_orgsite \$new_ipaddress
-vi \$htmldir/$new_dbname/config.php
+# Create the validated instance overlay and the small compatibility config.php.
+# The host base must be provisioned before running this setup script. Its
+# filename is versioned and owned by the cloned dbinst's loader, so makeconfig
+# below is what checks for it; repeating the name here would go stale at the
+# next contract version and report the wrong missing file.
+test -w /home/us3/lims/etc/config/instances || {
+  echo "Unwritable /home/us3/lims/etc/config/instances" >&2
+  exit 1
+}
+php $makeconfigfile $new_dbname \$new_orgsite \$new_ipaddress --base-overlay || exit 1
 
 echo "setting default cluster authorizations"
 echo php ~us3/lims/bin/set_cluster_authorizations.php $new_dbname updatepeople
