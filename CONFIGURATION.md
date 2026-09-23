@@ -27,8 +27,9 @@ Before using that mode:
   address.
 
 The generator uses the cloned dbinst version's validator, serializes metadata
-with PHP's value exporter, writes with temporary files and atomic renames, and
-refuses to overwrite an existing overlay or `config.php`.
+with PHP's value exporter, and writes each file to a temporary file that is
+then hard-linked into place. Linking fails if the destination exists, so an
+existing overlay or `config.php` is never overwritten, even by a concurrent run.
 
 The current `create_instance.php` setup script requests `--base-overlay` and
 checks the installed base and instance directory first. Other callers remain
