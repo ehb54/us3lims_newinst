@@ -19,7 +19,10 @@ Before using that mode:
   versioned loader is available;
 - `/home/us3/lims/etc/config/dbinst-base.v1.php` must be installed and valid;
 - `/home/us3/lims/etc/config/instances` must be writable by the account running
-  the generated setup command; and
+  the generated setup command and group-owned by the web server's group (for
+  example `apache`), and that account must be a member of the group. Overlays
+  are written `0640` with the directory's group so the web server can read
+  them; and
 - the requested address must match the base's internal or external host
   address.
 

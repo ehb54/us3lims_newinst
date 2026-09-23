@@ -87,7 +87,7 @@ function us3_newinst_require_dbinst_loader( $dbinst_dir )
   return $loader;
 }
 
-function us3_newinst_write_temp( $destination, $source, $mode )
+function us3_newinst_write_temp( $destination, $source, $mode, $group = null )
 {
   $directory = dirname( $destination );
   if ( !is_dir( $directory ) || !is_writable( $directory ) )
@@ -107,6 +107,13 @@ function us3_newinst_write_temp( $destination, $source, $mode )
   {
     @unlink( $temporary );
     us3_newinst_config_fail( "could not set permissions on temporary file" );
+  }
+
+  if ( $group !== null && !@chgrp( $temporary, $group ) )
+  {
+    @unlink( $temporary );
+    us3_newinst_config_fail(
+      "could not set group $group on temporary file in $directory" );
   }
 
   return $temporary;
@@ -141,10 +148,28 @@ function us3_newinst_write_base_overlay( $instance, $overlay_values,
   if ( file_exists( $shim_path ) )
     us3_newinst_config_fail( "config.php already exists: $shim_path" );
 
+  ## The overlay holds credentials, so it is not world-readable, and the web
+  ## server reads it through its group. That group is taken from the instances
+  ## directory and set explicitly: the setup script runs as us3, whose primary
+  ## group would otherwise leave an overlay Apache cannot read.
+  $overlay_group = filegroup( dirname( $overlay_path ) );
+  if ( $overlay_group === false )
+    us3_newinst_config_fail(
+      'could not read the group of ' . dirname( $overlay_path ) );
+
   $overlay_temp = us3_newinst_write_temp(
-    $overlay_path, us3_newinst_overlay_source( $contract ), 0640 );
-  $shim_temp = us3_newinst_write_temp(
-    $shim_path, us3_newinst_config_shim_source( $instance ), 0644 );
+    $overlay_path, us3_newinst_overlay_source( $contract ), 0640,
+    $overlay_group );
+  try
+  {
+    $shim_temp = us3_newinst_write_temp(
+      $shim_path, us3_newinst_config_shim_source( $instance ), 0644 );
+  }
+  catch ( Throwable $e )
+  {
+    @unlink( $overlay_temp );
+    throw $e;
+  }
 
   ## Install with link(), not rename(). rename() silently REPLACES an existing
   ## destination, so the file_exists() checks above are only a fast path with a
