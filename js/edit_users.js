@@ -19,14 +19,14 @@ function validate( form )
   var errors = 0;
 
   // First name is required
-  if ( trim( form.firstName.value ) == "" )
+  if ( trim( form.elements['fname'].value ) == "" )
   {
     msg += "--first name is missing\n";
     errors++;
   }
 
   // Last name is required
-  if ( trim( form.lastName.value ) == "" )
+  if ( trim( form.elements['lname'].value ) == "" )
   {
     msg += "--last name is missing\n";
     errors++;

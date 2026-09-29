@@ -41,15 +41,29 @@ Released      : 8/1/2010
   <link href="css/common.css" rel="stylesheet" type="text/css" />
   <script src="js/main.js" type="text/javascript"></script>
   <link rel='stylesheet' type='text/css' href='css/index.css' />
+  <link rel='stylesheet' type='text/css' href='css/csp.css' />
+
+HTML;
+
+if ( ! empty( $js ) )
+{
+  foreach ( explode( ',', $js ) as $script )
+  {
+    $script = htmlspecialchars( trim( $script ), ENT_QUOTES, 'UTF-8' );
+    echo "  <script src=\"$script\" type=\"text/javascript\"></script>\n";
+  }
+}
+
+echo<<<HTML
 
 </head>
 
 <body >
 <!-- begin header -->
-<div id="header" style='text-align:left;'> 
+<div id="header" class="text-left">
    <table class='noborder'>
    <tr><td><img src='images/USLIMS3-banner.png' alt='USLims 3 banner' /></td>
-       <td style='vertical-align:middle;width:400px;'></td>
+       <td class='banner-spacer'></td>
    </tr>
    </table>
 

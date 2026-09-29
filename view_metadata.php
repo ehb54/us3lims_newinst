@@ -64,7 +64,7 @@ global $link;
 
   $table = <<<HTML
   <form action="{$_SERVER['PHP_SELF']}" method="post" >
-  <table cellspacing='0' cellpadding='7' class='style1 sortable' style='width:95%;'>
+  <table cellspacing='0' cellpadding='7' class='style1 sortable wide-table'>
     <thead>
       <tr>
           <th>Institution</th>
@@ -77,7 +77,7 @@ global $link;
     <tfoot>
       <tr><td colspan='5'>
                           <input type='button' value='Print Version' 
-                                 onclick='print_version();' /></td></tr>
+                                 class='print-version' /></td></tr>
     </tfoot>
 
     <tbody>

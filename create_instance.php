@@ -294,7 +294,7 @@ TEXT;
      present the generated config.php for you to edit. Double check the file 
      using this information:</p>
 
-  <table cellspacing='0' cellpadding='3' style='text-align:left;'>
+  <table cellspacing='0' cellpadding='3' class='text-left'>
     <tr><th>Database name:</th><td>$new_dbname</td></tr>
     <tr><th>Database user:</th><td>$new_dbuser</td></tr>
     <tr><th>DB User Password:</th><td>$new_dbpasswd</td></tr>

@@ -1,0 +1,9 @@
+/* Layout formerly expressed with inline styles. */
+.text-left { text-align: left; }
+.banner-spacer { vertical-align: middle; width: 400px; }
+.sidebar-spacing { padding-bottom: 30em; }
+.login-input { width: 20em; }
+.clear-both { clear: both; }
+.text-red { color: red; }
+.query-result { margin: 2em 0 20em; }
+.wide-table { width: 95%; }

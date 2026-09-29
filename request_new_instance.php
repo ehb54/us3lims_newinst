@@ -269,7 +269,7 @@ HTML;
 // Function to display a captcha and request human input
 function do_captcha( $msg = "" )
 {
-  $message = ( empty( $msg ) ) ? "" : "<p style='color:red;'>$msg</p>";
+  $message = ( empty( $msg ) ) ? "" : "<p class='text-red'>$msg</p>";
 
   // Let's just use the random password function we already have
   $pw = makeRandomPassword();
