@@ -96,7 +96,6 @@ if ( isset($_POST['email_login']) )
 
 // Start displaying page
 $page_title = 'Process LIMS Instance Requests';
-$js = 'js/edit_metadata.js';
 include 'header.php';
 include 'lib/selectboxes.php';
 
