@@ -201,7 +201,7 @@ function edit_record()
 
 echo<<<HTML
   <form action="{$_SERVER['PHP_SELF']}" method="post"
-        class="validate-user">
+        class="onsubmit-return-validate-this">
   <table cellspacing='0' cellpadding='10' class='style1'>
     <thead>
       <tr><th colspan='8'>Edit My Information</th></tr>

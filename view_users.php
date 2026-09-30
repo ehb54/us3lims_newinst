@@ -138,7 +138,7 @@ function display_record()
 
   // Populate a list box to allow user to jump to another record
   $nav_listbox =  "<select name='nav_box' id='nav_box' " .
-                  "        class='person-selector' >" .
+                  "        class='onchange-get-person' >" .
                   "  <option value='null'>None selected...</option>\n";
   $query  = "SELECT personID, lname, fname FROM people " .
             "ORDER BY lname, fname ";

@@ -73,7 +73,7 @@ function create_table()
     </thead>
     <tfoot>
       <tr><td colspan='5'><input type='button' value='Print Version' 
-                                 class='print-version' /></td></tr>
+                                 class='onclick-print-version' /></td></tr>
     </tfoot>
 
     <tbody>

@@ -33,7 +33,7 @@ echo<<<HTML
      mail information to you.</p>
 
   <form action="register.php" method="post"
-        class='validate-user'>
+        class='onsubmit-return-validate-this'>
   <table cellspacing='0' cellpadding='10'>
     <thead>
       <tr><th colspan='2'>Personal Information</th></tr>
