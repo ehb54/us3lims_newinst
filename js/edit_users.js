@@ -87,21 +87,6 @@ function validate( form )
     msg += "Email Address not specified\n";
     errors++;
   }
-  else 
-  {
-    // Check for @ and ensire a . is at the right place.
-    var checkEmail = form.email.value;
-
-    if (  checkEmail.indexOf('@') < 0  ||
-           ( checkEmail.charAt(checkEmail.length-4) != '.'
-             && checkEmail.charAt(checkEmail.length-3) != '.'
-           )
-         )
-    {
-    msg += "Invalid Email Address\n";
-    errors++;
-    }
-  }
 
   if ( errors > 0 )
   {
