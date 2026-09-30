@@ -52,7 +52,6 @@ Released      : 3/1/2010
   <link rel="shortcut icon" href="images/favicon.ico" />
   <link href="css/main_print.css" rel="stylesheet" type="text/css" />
   <link href="css/print_version.css" rel="stylesheet" type="text/css" />
-  <link href="css/csp.css" rel="stylesheet" type="text/css" />
   <script src="js/sorttable.js" type="text/javascript"></script>
 
 HTML;
@@ -64,7 +63,7 @@ HTML;
 
 <!-- begin header -->
 <div id="header">
-  <h3 class='text-left'>UltraScan III LIMS Portal</h3>
+  <h3>UltraScan III LIMS Portal</h3>
 </div>
 
 <?php
@@ -82,7 +81,6 @@ HTML;
   $today  = date("Y\-m\-d");
 echo<<<HTML
   <!-- end content -->
-  <div class="clear-both"></div>
 
 <!-- end page -->
 <div id="footer">

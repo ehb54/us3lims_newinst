@@ -26,11 +26,11 @@ echo<<<HTML
     <table cellspacing='0' cellpadding='7'>
       <tr><td>E-Mail Address:</td>
           <td><input type='text' name='email' maxlength='64' size='20'
-                     class='login-input' /></td></tr>
+                     class='w-20em' /></td></tr>
 
       <tr><td>Password:</td>
           <td><input type='password' name='password' maxlength='32'
-                     size='20' class='login-input'/></td></tr>
+                     size='20' class='w-20em'/></td></tr>
 
       <tr><td><input type='submit' name='Submit' value='Sign In'/></td></tr>
     </table>

@@ -64,7 +64,7 @@ global $link;
 
   $table = <<<HTML
   <form action="{$_SERVER['PHP_SELF']}" method="post" >
-  <table cellspacing='0' cellpadding='7' class='style1 sortable wide-table'>
+  <table cellspacing='0' cellpadding='7' class='style1 sortable w-95p'>
     <thead>
       <tr>
           <th>Institution</th>

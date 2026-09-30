@@ -62,7 +62,7 @@ function create_table()
             or die("Query failed : $query<br />\n" . mysqli_error($link));
 
   $table = <<<HTML
-  <table cellspacing='0' cellpadding='7' class='style1 sortable wide-table'>
+  <table cellspacing='0' cellpadding='7' class='style1 sortable w-95p'>
     <thead>
       <tr>
           <th>Name</th>

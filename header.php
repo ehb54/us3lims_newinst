@@ -41,7 +41,6 @@ Released      : 8/1/2010
   <link href="css/common.css" rel="stylesheet" type="text/css" />
   <script src="js/main.js" type="text/javascript"></script>
   <link rel='stylesheet' type='text/css' href='css/index.css' />
-  <link rel='stylesheet' type='text/css' href='css/csp.css' />
 
 HTML;
 
@@ -63,7 +62,7 @@ echo<<<HTML
 <div id="header" class="text-left">
    <table class='noborder'>
    <tr><td><img src='images/USLIMS3-banner.png' alt='USLims 3 banner' /></td>
-       <td class='banner-spacer'></td>
+       <td class='w-400px-valign-middle'></td>
    </tr>
    </table>
 
