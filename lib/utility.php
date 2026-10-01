@@ -6,6 +6,13 @@
  *
  */
 
+// The us3 account's home, without a shell (SELinux blocks exec() for httpd)
+function us3_home()
+{
+  $entry = function_exists( 'posix_getpwnam' ) ? posix_getpwnam( 'us3' ) : false;
+  return $entry ? $entry[ 'dir' ] : '/home/us3';
+}
+
 function emailsyntax_is_valid($email)
 {
   if ( strpos( $email, "@" ) === false ) return FALSE;

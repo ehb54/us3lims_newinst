@@ -230,12 +230,13 @@ function do_step2()
   $makeconfigfile = $full_path . 'makeconfig.php';
  
   $branch_cmd = "";
-  $cnfpath = exec( "ls ~us3/lims/database/utils/db_config.php" );
+  $cnfpath = us3_home() . '/lims/database/utils/db_config.php';
   if ( file_exists( $cnfpath ) ) {
      include $cnfpath;
      $branch_cmd = "&& git checkout " . $repo_branches[ "https://github.com/ehb54/us3lims_dbinst.git" ];
   }
 
+  $instances_dir = us3_home() . '/lims/etc/config/instances';
   $setupLIMS = <<<TEXT
 #!/bin/bash
 # A script to create the $institution LIMS
@@ -252,9 +253,16 @@ chmod g+w \$htmldir/$new_dbname/data
 new_orgsite=$(hostname)
 new_ipaddress=$(resolveip -s `hostname`)
 
-#Now make the config.php file
-php $makeconfigfile $new_dbname \$new_orgsite \$new_ipaddress
-vi \$htmldir/$new_dbname/config.php
+# Create the validated instance overlay and the small compatibility config.php.
+# The host base must be provisioned before running this setup script. Its
+# filename is versioned and owned by the cloned dbinst's loader, so makeconfig
+# below is what checks for it; repeating the name here would go stale at the
+# next contract version and report the wrong missing file.
+test -w $instances_dir || {
+  echo "Unwritable $instances_dir" >&2
+  exit 1
+}
+php $makeconfigfile $new_dbname \$new_orgsite \$new_ipaddress --base-overlay || exit 1
 
 echo "setting default cluster authorizations"
 echo php ~us3/lims/bin/set_cluster_authorizations.php $new_dbname updatepeople
@@ -283,9 +291,9 @@ TEXT;
 
   <p>A script file called $new_LIMSfile has been created for you in the us3 
      user&rsquo;s $instance_dir directory that does all of this. As the us3 
-     user, execute the script. At the end of the process the script will
-     present the generated config.php for you to edit. Double check the file 
-     using this information:</p>
+     user, execute the script. It creates the instance overlay and
+     config.php and stops if anything fails. Check its output against
+     this information:</p>
 
   <table cellspacing='0' cellpadding='3' style='text-align:left;'>
     <tr><th>Database name:</th><td>$new_dbname</td></tr>
