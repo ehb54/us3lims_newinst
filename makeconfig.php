@@ -96,7 +96,9 @@ $text = <<<TEXT
 
 */
 
-\$cfgfile            = exec( "ls ~us3/lims/.us3lims.ini" );
+// No exec(): SELinux denies httpd_t a shell, which left \$cfgfile empty.
+\$us3pwentry         = function_exists( 'posix_getpwnam' ) ? posix_getpwnam( 'us3' ) : false;
+\$cfgfile            = ( \$us3pwentry ? \$us3pwentry['dir'] : '/home/us3' ) . '/lims/.us3lims.ini';
 \$configs            = parse_ini_file( \$cfgfile, true );
 \$org_name           = 'UltraScan3 LIMS portal';
 \$org_site           = {$v['org_site']};
