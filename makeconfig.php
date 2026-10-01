@@ -71,6 +71,23 @@ $year   = date( "Y" );
 #$lab_contact = preg_replace( "/\r|\n/", "<br />", $lab_contact );
 $lab_contact = preg_replace( "/\r/", "<br />", $lab_contact );
 
+// Each value is written as a PHP literal, so quotes in stored metadata cannot end the string
+$v = array_map( function( $s ) { return var_export( (string) $s, true ); }, array(
+  'org_site'       => "$new_orgsite/$new_dbname",
+  'admin'          => "$admin_fname $admin_lname",
+  'admin_phone'    => $lab_contact,
+  'admin_email'    => $admin_email,
+  'dbusername'     => $new_dbuser,
+  'dbpasswd'       => $new_dbpasswd,
+  'dbname'         => $new_dbname,
+  'secure_user'    => $secure_user,
+  'secure_pw'      => $secure_pw,
+  'ipaddr'         => $new_ipaddress,
+  'full_path'      => "$dest_path$new_dbname/",
+  'data_dir'       => "$dest_path$new_dbname/data/",
+  'last_update'    => $today,
+  'copyright_date' => $year ) );
+
 // create config.php script
 $text = <<<TEXT
 <?php
@@ -82,24 +99,24 @@ $text = <<<TEXT
 \$cfgfile            = exec( "ls ~us3/lims/.us3lims.ini" );
 \$configs            = parse_ini_file( \$cfgfile, true );
 \$org_name           = 'UltraScan3 LIMS portal';
-\$org_site           = '$new_orgsite/$new_dbname';
+\$org_site           = {$v['org_site']};
 \$site_author        = 'Borries Demeler, University of Lethbridge';
 \$site_keywords      = 'ultrascan analytical ultracentrifugation lims';
                       # The website keywords (meta tag)
 \$site_desc          = 'Website for the UltraScan3 LIMS portal'; # Site description
 
-\$admin              = '$admin_fname $admin_lname';
-\$admin_phone        = '$lab_contact'; #'Office: <br />Fax: ';
-\$admin_email        = '$admin_email';
+\$admin              = {$v['admin']};
+\$admin_phone        = {$v['admin_phone']}; #'Office: <br />Fax: ';
+\$admin_email        = {$v['admin_email']};
 
-\$dbusername         = '$new_dbuser';  # the name of the MySQL user
-\$dbpasswd           = '$new_dbpasswd';  # the password for the MySQL user
-\$dbname             = '$new_dbname';  # the name of the database
+\$dbusername         = {$v['dbusername']};  # the name of the MySQL user
+\$dbpasswd           = {$v['dbpasswd']};  # the password for the MySQL user
+\$dbname             = {$v['dbname']};  # the name of the database
 \$dbhost             = 'localhost'; # the host on which MySQL runs, generally localhost
 
 // Secure user credentials
-\$secure_user        = '$secure_user'; # the secure username that UltraScan3 uses
-\$secure_pw          = '$secure_pw';   # the secure password that UltraScan3 uses
+\$secure_user        = {$v['secure_user']}; # the secure username that UltraScan3 uses
+\$secure_pw          = {$v['secure_pw']};   # the secure password that UltraScan3 uses
 
 // Global DB
 \$globaldbuser       = 'gfac';  # the name of the MySQL user
@@ -107,8 +124,8 @@ $text = <<<TEXT
 \$globaldbname       = 'gfac';  # the name of the database
 \$globaldbhost       = 'localhost'; # the host on which MySQL runs, generally localhost
 
-\$ipaddr             = '$new_ipaddress'; # the primary IP address of the host machine
-\$ipa_ext            = '$new_ipaddress'; # the external IP address of the host machine
+\$ipaddr             = {$v['ipaddr']}; # the primary IP address of the host machine
+\$ipa_ext            = {$v['ipaddr']}; # the external IP address of the host machine
 \$udpport            = 12233; # the port to send udp messages to
 \$svcport            = 8080;  # the port for GFAC/Airavata services
 \$uses_thrift        = true;  # flags use of Thrift rather than Gfac
@@ -118,8 +135,8 @@ $text = <<<TEXT
 \$top_image          = '#';  # name of the logo to use
 \$top_banner         = 'images/#';  # name of the banner at the top
 
-\$full_path          = '$dest_path$new_dbname/';  # Location of the system code
-\$data_dir           = '$dest_path$new_dbname/data/'; # Full path
+\$full_path          = {$v['full_path']};  # Location of the system code
+\$data_dir           = {$v['data_dir']}; # Full path
 \$submit_dir         = '/srv/www/htdocs/uslims3/uslims3_data/'; # Full path
 \$class_dir          = '/srv/www/htdocs/common/class/';       # Production class path
 //\$class_dir          = '/srv/www/htdocs/common/class_devel/'; # Development class path
@@ -128,8 +145,8 @@ $text = <<<TEXT
 
 // Dates
 date_default_timezone_set( 'America/Chicago' );
-\$last_update        = '$today'; # the date the website was last updated
-\$copyright_date     = '$year'; # copyright date
+\$last_update        = {$v['last_update']}; # the date the website was last updated
+\$copyright_date     = {$v['copyright_date']}; # copyright date
 \$current_year       = date( 'Y' );
 
 \$enable_GMP         = false;
