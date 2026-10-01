@@ -5,6 +5,8 @@
  * A place to edit/update/process the metadata table
  *
  */
+include 'config.php';
+include 'require_https.php';
 session_start();
 
 // Are we authorized to view this page?
@@ -565,7 +567,7 @@ Investigator Email:    $admin_email
 Investigator Password: $admin_pw
 
 LIMS Setup
-URL:                http://$new_limshost/$new_dbname
+URL:                https://$new_limshost/$new_dbname
 DB User:            $new_dbuser
 DB Pw:              $new_dbpasswd
 DB Name:            $new_dbname

@@ -162,7 +162,7 @@ Admin Investigator Setup Information
 Investigator Email: $admin_email
 Investigator Password: $admin_pw
 
-LIMS URL:              http://$new_limshost/$new_dbname
+LIMS URL:              https://$new_limshost/$new_dbname
 TEXT;
 
   global $output_dir;

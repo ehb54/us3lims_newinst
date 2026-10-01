@@ -5,6 +5,8 @@
  * A place to request a new LIMS instance
  *
  */
+include 'config.php';
+include 'require_https.php';
 session_start();
 
 include 'config.php';

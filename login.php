@@ -7,6 +7,7 @@
  */
 
 include_once 'config.php';
+include 'require_https.php';
 
 $page_title = "Login";
 include 'header.php';
@@ -22,7 +23,7 @@ echo<<<HTML
   <h3>Registered users please log in:</h3>
   <p class='message'>$message</p>
 
-  <form method='post' action='https://$org_site/checkuser.php'>
+  <form method='post' action='checkuser.php'>
     <table cellspacing='0' cellpadding='7'>
       <tr><td>E-Mail Address:</td>
           <td><input type='text' name='email' maxlength='64' size='20'
@@ -36,10 +37,10 @@ echo<<<HTML
     </table>
   </form>
 
-  <p><a href='http://$org_site/lost_password.php'>Forget your password?</a></p>
+  <p><a href='https://$org_site/lost_password.php'>Forget your password?</a></p>
 
   <h3>New Users:</h3>
-  <p><a href='http://$org_site/newaccount.php'>Sign up for a new account</a></p>
+  <p><a href='https://$org_site/newaccount.php'>Sign up for a new account</a></p>
 
 </div>
 

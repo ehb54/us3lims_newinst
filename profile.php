@@ -5,6 +5,8 @@
  * A place for a user to edit/update his own info
  *
  */
+include 'config.php';
+include 'require_https.php';
 session_start();
 
 // Are we authorized to view this page?
