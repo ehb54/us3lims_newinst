@@ -3,11 +3,3 @@
 table.style1 tbody th {
   text-align            : center;
 }
-
-#header h3 {
-  text-align            : left;
-}
-
-#footer {
-  clear                 : both;
-}
