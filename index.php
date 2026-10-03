@@ -5,7 +5,7 @@
  * main page 
  *
  */
-session_start();
+include 'session.php';
 
 include 'config.php';
 

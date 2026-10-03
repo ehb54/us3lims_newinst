@@ -5,7 +5,7 @@
  * Creates a config.php file
  *
  */
-session_start();
+include 'session.php';
 
 /*
 // Are we authorized to view this page?

@@ -5,7 +5,9 @@
  * A place to request a new LIMS instance
  *
  */
-session_start();
+include 'config.php';
+include 'require_https.php';
+include 'session.php';
 
 include 'config.php';
 include 'db.php';
@@ -269,7 +271,7 @@ HTML;
 // Function to display a captcha and request human input
 function do_captcha( $msg = "" )
 {
-  $message = ( empty( $msg ) ) ? "" : "<p style='color:red;'>$msg</p>";
+  $message = ( empty( $msg ) ) ? "" : "<p class='text-red'>$msg</p>";
 
   // Let's just use the random password function we already have
   $pw = makeRandomPassword();

@@ -5,7 +5,7 @@
  * Admin's page to enter SQL queries directly
  *
  */
-session_start();
+include 'session.php';
 
 // Are we authorized to view this page?
 if ( ! isset($_SESSION['id']) )
@@ -51,13 +51,13 @@ if (isset($_POST['do_sql']))
   {
     // The result of an UPDATE, DELETE, DROP, INSERT, etc.
     $rows = mysqli_affected_rows();
-    echo "<p style='margin:2em 0em 20em;'>$rows rows affected</p>\n";
+    echo "<p class='m-2em-0-20em'>$rows rows affected</p>\n";
   }
     
   // Only SELECT, DESCRIBE, etc. here
   else if (mysqli_num_rows($result) < 1)
   {
-    echo "<p style='margin:2em 0em 20em;'>No rows returned</p>\n";
+    echo "<p class='m-2em-0-20em'>No rows returned</p>\n";
   }
 
   else

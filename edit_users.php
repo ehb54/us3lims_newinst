@@ -5,7 +5,7 @@
  * A place to edit/update the people table
  *
  */
-session_start();
+include 'session.php';
 
 // Are we authorized to view this page?
 if ( ! isset($_SESSION['id']) )
@@ -225,7 +225,7 @@ function display_record()
 
   // Populate a list box to allow user to jump to another record
   $nav_listbox =  "<select name='nav_box' id='nav_box' " .
-                  "        onchange='get_person(this);' >" .
+                  "        class='onchange-get-person' >" .
                   "  <option value='null'>None selected...</option>\n";
   $query  = "SELECT personID, lname, fname FROM people " .
             "ORDER BY lname, fname ";
@@ -376,7 +376,7 @@ function edit_record()
     
 echo<<<HTML
   <form action="{$_SERVER['PHP_SELF']}" method="post"
-        onsubmit="return validate(this);">
+        class="onsubmit-return-validate-this">
   <table cellspacing='0' cellpadding='10' class='style1'>
     <thead>
       <tr><th colspan='8'>Edit Profile</th></tr>
