@@ -7,7 +7,7 @@
  */
 include 'config.php';
 include 'require_https.php';
-session_start();
+include 'session.php';
 
 // Are we authorized to view this page?
 if ( ! isset($_SESSION['id']) )
@@ -167,8 +167,22 @@ function do_update()
   if ( $admin_pw1 != $admin_pw2 )
     $message .= "--administrator passwords do not match.<br />";
 
+  // The database name reaches a CREATE DATABASE, a grant, and the generated
+  // config files, so it has to hold the same shape the create path requires
+  // (makeconfig.php). Editing an instance used to skip the check that creating
+  // one applies.
+  if ( ! empty( $dbname ) && ! preg_match( '/^uslims3_[A-Za-z0-9_]+$/', $dbname ) )
+    $message .= "--db name must be uslims3_ followed by alphanumerics or"
+              . " underscore.<br />";
+
   // Check $inst_abbrev, which needs to be unique
   $inst_abbrev = preg_replace( "/ /", "_", $inst_abbrev );
+  // Limit characters to alphanumerics and underscore, as the create path does
+  $inst_abbre1 = $inst_abbrev;
+  $inst_abbrev = preg_replace( "/[^A-Za-z0-9_]/", "_", $inst_abbrev, -1, $rcount );
+  if ( $rcount > 0 )
+    $message .= "--abbreviation $inst_abbre1 changed to $inst_abbrev"
+              . " (only alphanumeric and underscore allowed).<br/>";
   $query  = "SELECT COUNT(*) FROM metadata " .
             "WHERE inst_abbrev = '$inst_abbrev' " .
             "AND metadataID != $metadataID ";

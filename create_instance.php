@@ -5,7 +5,7 @@
  * Use the information in the metadata table to set up a new db instance
  *
  */
-session_start();
+include 'session.php';
 
 // Are we authorized to view this page?
 if ( ! isset($_SESSION['id']) )
@@ -244,11 +244,21 @@ function do_step2()
 DIR=\$(pwd)
 htmldir="/srv/www/htdocs/uslims3"
 
-git clone https://github.com/ehb54/us3lims_dbinst.git \$htmldir/$new_dbname
-( cd \$htmldir/$new_dbname $branch_cmd )
-mkdir \$htmldir/$new_dbname/data
+# Each step is checked. An unchecked clone meant a network or permission failure
+# fell through to a mkdir inside a directory that does not exist, and then to
+# makeconfig against a missing instance, leaving a half-made instance and an
+# error that pointed at the wrong step.
+git clone https://github.com/ehb54/us3lims_dbinst.git \$htmldir/$new_dbname || {
+  echo "git clone of us3lims_dbinst into \$htmldir/$new_dbname failed" >&2
+  exit 1
+}
+( cd \$htmldir/$new_dbname $branch_cmd ) || {
+  echo "could not select the dbinst branch in \$htmldir/$new_dbname" >&2
+  exit 1
+}
+mkdir \$htmldir/$new_dbname/data || exit 1
 #sudo chgrp apache \$htmldir/$new_dbname/data
-chmod g+w \$htmldir/$new_dbname/data
+chmod g+w \$htmldir/$new_dbname/data || exit 1
 
 new_orgsite=$(hostname)
 new_ipaddress=$(resolveip -s `hostname`)

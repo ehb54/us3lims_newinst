@@ -5,12 +5,17 @@
  * Include file that contains links
  *  Needs session_start(), config.php
  *
+ * The links are relative on purpose. They used to be absolute http:// URLs, so
+ * every click after an https login dropped back to http and left the secure
+ * session cookie behind. Relative keeps whatever scheme the visitor arrived on.
+ * login.php stays absolute https, because arriving on http and then logging in
+ * over http is the one case worth forcing.
  */
 
 echo<<<HTML
 <div id='sidebar' class='pb-30em'>
 
-  <a href='http://$org_site/index.php'>Welcome!</a>
+  <a href='index.php'>Welcome!</a>
 
 HTML;
 
@@ -20,10 +25,10 @@ HTML;
   {
     echo <<<HTML
       <h4>Admin</h4>
-      <a href='http://$org_site/mysql_admin.php'>MySQL</a>
-      <a href='http://$org_site/edit_users.php'>Edit User Info</a>
-      <a href='http://$org_site/view_users.php'>View User Info</a>
-      <a href='http://$org_site/view_all.php'>View All Users</a>
+      <a href='mysql_admin.php'>MySQL</a>
+      <a href='edit_users.php'>Edit User Info</a>
+      <a href='view_users.php'>View User Info</a>
+      <a href='view_all.php'>View All Users</a>
 
       <h4>Instances</h4>
       <a href="request_new_instance.php">Request Instance</a>
@@ -38,9 +43,9 @@ HTML;
   {
     echo <<<HTML
       <h4>Admin</h4>
-      <a href='http://$org_site/edit_users.php'>Edit User Info</a>
-      <a href='http://$org_site/view_users.php'>View User Info</a>
-      <a href='http://$org_site/view_all.php'>View All Users</a>
+      <a href='edit_users.php'>Edit User Info</a>
+      <a href='view_users.php'>View User Info</a>
+      <a href='view_all.php'>View All Users</a>
 
       <h4>Instances</h4>
       <a href="request_new_instance.php">Request Instance</a>
@@ -55,8 +60,8 @@ HTML;
   {
     echo <<<HTML
       <h4>Admin</h4>
-      <a href='http://$org_site/view_users.php'>View User Info</a>
-      <a href='http://$org_site/view_all.php'>View All Users</a>
+      <a href='view_users.php'>View User Info</a>
+      <a href='view_all.php'>View All Users</a>
 
       <h4>Instances</h4>
       <a href="request_new_instance.php">Request Instance</a>
@@ -80,9 +85,9 @@ HTML;
   {
     echo <<<HTML
       <h4>General</h4>
-      <a href='http://$org_site/profile.php?edit=12'>Change My Info</a>
+      <a href='profile.php?edit=12'>Change My Info</a>
       <a href="contacts.php">Contacts</a>
-      <a href='http://$org_site/logout.php'>Logout</a>
+      <a href='logout.php'>Logout</a>
 
 HTML;
   }

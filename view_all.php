@@ -5,7 +5,7 @@
  * Display the entire people table
  *
  */
-session_start();
+include 'session.php';
 
 // Are we authorized to view this page?
 if ( ! isset($_SESSION['id']) )

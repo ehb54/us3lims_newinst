@@ -5,7 +5,7 @@
  * Admin's page to enter SQL queries directly
  *
  */
-session_start();
+include 'session.php';
 
 // Are we authorized to view this page?
 if ( ! isset($_SESSION['id']) )

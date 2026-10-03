@@ -5,7 +5,7 @@
  * A program to create a page suitable for printing
  *
  */
-session_start();
+include 'session.php';
 
 // Are we authorized to view this page?
 if ( ! isset($_SESSION['id']) )

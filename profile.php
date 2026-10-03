@@ -7,7 +7,7 @@
  */
 include 'config.php';
 include 'require_https.php';
-session_start();
+include 'session.php';
 
 // Are we authorized to view this page?
 if ( ! isset($_SESSION['id']) )

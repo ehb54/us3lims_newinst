@@ -5,7 +5,7 @@
  * Display the entire metadata table, allowing individual records to be edited
  *
  */
-session_start();
+include 'session.php';
 
 // Are we authorized to view this page?
 if ( ! isset($_SESSION['id']) )

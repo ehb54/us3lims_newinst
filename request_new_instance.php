@@ -7,7 +7,7 @@
  */
 include 'config.php';
 include 'require_https.php';
-session_start();
+include 'session.php';
 
 include 'config.php';
 include 'db.php';
