@@ -70,7 +70,7 @@ Investigator Email:    $email
 Investigator Password: $admin_pw
 
 LIMS Setup
-URL:                http://$new_limshost/$new_dbname
+URL:                https://$new_limshost/$new_dbname
 TEXT;
 
   // Mail the user
