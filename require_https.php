@@ -14,6 +14,13 @@
  * REQUEST_URI is appended as-is, which is safe once the host is present: the
  * authority ends at the first slash, so a path beginning '//' stays a path.
  */
+## Guarded: login.php and checkuser.php both `include` this file rather than
+## `include_once`, and login.php is itself included from checkuser.php's error
+## paths. A second plain include redeclared this function and turned every
+## failed login into a fatal "Cannot redeclare require_https_target()" (HTTP
+## 500) instead of the login page with a message.
+if ( ! function_exists( 'require_https_target' ) )
+{
 function require_https_target( $org_site, $request_uri )
 {
     $host = strtok( (string) $org_site, '/' );
@@ -25,8 +32,18 @@ function require_https_target( $org_site, $request_uri )
 
     return 'https://' . $host . (string) $request_uri;
 }
+}
 
-if ( PHP_SAPI !== 'cli' && ( empty( $_SERVER['HTTPS'] ) || $_SERVER['HTTPS'] === 'off' ) )
+## Same three signals session.php already trusts for its cookie's secure flag:
+## a TLS-terminating proxy never sets $_SERVER['HTTPS'], so checking only that
+## redirected every request behind one, forever, in a loop.
+$us3_is_https =
+    ( ! empty( $_SERVER[ 'HTTPS' ] ) && strtolower( $_SERVER[ 'HTTPS' ] ) !== 'off' )
+    || ( isset( $_SERVER[ 'HTTP_X_FORWARDED_PROTO' ] )
+         && strtolower( $_SERVER[ 'HTTP_X_FORWARDED_PROTO' ] ) === 'https' )
+    || ( isset( $_SERVER[ 'SERVER_PORT' ] ) && (int) $_SERVER[ 'SERVER_PORT' ] === 443 );
+
+if ( PHP_SAPI !== 'cli' && ! $us3_is_https )
 {
     $target = require_https_target( isset( $org_site ) ? $org_site : '',
                                     isset( $_SERVER['REQUEST_URI'] ) ? $_SERVER['REQUEST_URI'] : '/' );
