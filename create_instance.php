@@ -233,7 +233,14 @@ function do_step2()
   $cnfpath = us3_home() . '/lims/database/utils/db_config.php';
   if ( file_exists( $cnfpath ) ) {
      include $cnfpath;
-     $branch_cmd = "&& git checkout " . $repo_branches[ "https://github.com/ehb54/us3lims_dbinst.git" ];
+     $dbinst_branch = $repo_branches[ "https://github.com/ehb54/us3lims_dbinst.git" ] ?? '';
+     ## A missing or empty key used to build "&& git checkout " with no
+     ## argument. git checkout with nothing to check out exits 0 and changes
+     ## nothing, so ( cd ... $branch_cmd ) || exit 1 never caught it: the
+     ## instance was silently left on whatever branch the clone defaulted to.
+     if ( trim( $dbinst_branch ) !== '' ) {
+        $branch_cmd = "&& git checkout " . $dbinst_branch;
+     }
   }
 
   $instances_dir = us3_home() . '/lims/etc/config/instances';
