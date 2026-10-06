@@ -5,7 +5,7 @@
  * Creates a captcha text string onto a jpeg background and sends it back
  *
  */
-session_start();
+include 'session.php';
 
 if ( ! isset( $_SESSION['captcha'] ) )
 {

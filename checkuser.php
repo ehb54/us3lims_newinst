@@ -5,7 +5,9 @@
  * Verify user credentials
  *
  */
-session_start();
+include 'config.php';
+include 'require_https.php';
+include 'session.php';
 
 include 'config.php';
 include 'db.php';
@@ -120,7 +122,7 @@ if ( $row["account_enabled"] != 1 )
 $query = "UPDATE people SET lastLogin=now() WHERE personID=$personID";
 mysqli_query($link,$query);
 
-header("Location: http://$org_site/index.php");
+header("Location: index.php");
 exit();
 
 function remove_session()

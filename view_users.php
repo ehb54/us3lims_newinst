@@ -5,7 +5,7 @@
  * A place to view the people table
  *
  */
-session_start();
+include 'session.php';
 
 // Are we authorized to view this page?
 if ( ! isset($_SESSION['id']) )
@@ -138,7 +138,7 @@ function display_record()
 
   // Populate a list box to allow user to jump to another record
   $nav_listbox =  "<select name='nav_box' id='nav_box' " .
-                  "        onchange='get_person(this);' >" .
+                  "        class='onchange-get-person' >" .
                   "  <option value='null'>None selected...</option>\n";
   $query  = "SELECT personID, lname, fname FROM people " .
             "ORDER BY lname, fname ";
