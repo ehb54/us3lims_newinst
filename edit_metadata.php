@@ -5,7 +5,9 @@
  * A place to edit/update/process the metadata table
  *
  */
-session_start();
+include 'config.php';
+include 'require_https.php';
+include 'session.php';
 
 // Are we authorized to view this page?
 if ( ! isset($_SESSION['id']) )
@@ -96,7 +98,6 @@ if ( isset($_POST['email_login']) )
 
 // Start displaying page
 $page_title = 'Process LIMS Instance Requests';
-$js = 'js/edit_metadata.js';
 include 'header.php';
 include 'lib/selectboxes.php';
 
@@ -166,8 +167,22 @@ function do_update()
   if ( $admin_pw1 != $admin_pw2 )
     $message .= "--administrator passwords do not match.<br />";
 
+  // The database name reaches a CREATE DATABASE, a grant, and the generated
+  // config files, so it has to hold the same shape the create path requires
+  // (makeconfig.php). Editing an instance used to skip the check that creating
+  // one applies.
+  if ( ! empty( $dbname ) && ! preg_match( '/^uslims3_[A-Za-z0-9_]+$/', $dbname ) )
+    $message .= "--db name must be uslims3_ followed by alphanumerics or"
+              . " underscore.<br />";
+
   // Check $inst_abbrev, which needs to be unique
   $inst_abbrev = preg_replace( "/ /", "_", $inst_abbrev );
+  // Limit characters to alphanumerics and underscore, as the create path does
+  $inst_abbre1 = $inst_abbrev;
+  $inst_abbrev = preg_replace( "/[^A-Za-z0-9_]/", "_", $inst_abbrev, -1, $rcount );
+  if ( $rcount > 0 )
+    $message .= "--abbreviation $inst_abbre1 changed to $inst_abbrev"
+              . " (only alphanumeric and underscore allowed).<br/>";
   $query  = "SELECT COUNT(*) FROM metadata " .
             "WHERE inst_abbrev = '$inst_abbrev' " .
             "AND metadataID != $metadataID ";
@@ -566,7 +581,7 @@ Investigator Email:    $admin_email
 Investigator Password: $admin_pw
 
 LIMS Setup
-URL:                http://$new_limshost/$new_dbname
+URL:                https://$new_limshost/$new_dbname
 DB User:            $new_dbuser
 DB Pw:              $new_dbpasswd
 DB Name:            $new_dbname
