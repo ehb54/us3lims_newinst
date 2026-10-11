@@ -66,7 +66,7 @@ else                  // No, just display the captcha
 </div>
 
 <?php
-include 'footer.php';
+include $common_dir . 'footer.php';
 exit();
 
 // Function to create the new record

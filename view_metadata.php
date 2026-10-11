@@ -49,7 +49,7 @@ $_SESSION['print_text']  = $table;
 </div>
 
 <?php
-include 'footer.php';
+include $common_dir . 'footer.php';
 exit();
 
 // Function to display a table of all records

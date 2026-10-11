@@ -38,9 +38,9 @@ Released      : 8/1/2010
   <meta name="robots" content="index, follow" />
   <meta name="verify-v1" content="+TIfXSnY08mlIGLtDJVkQxTV4kDYMoWu2GLfWLI7VBE=" />
   <link rel="shortcut icon" href="images/favicon.ico" />
-  <link href="css/common.css" rel="stylesheet" type="text/css" />
+  <link href="/common/css/common.css" rel="stylesheet" type="text/css" />
   <script src="js/main.js" type="text/javascript"></script>
-  <link rel='stylesheet' type='text/css' href='css/index.css' />
+  <link rel='stylesheet' type='text/css' href='/common/css/index.css' />
 
 HTML;
 
@@ -68,7 +68,7 @@ echo<<<HTML
 
 HTML;
 
-  include 'topmenu.php';
+  include $common_dir . 'topmenu.php';
 
 echo<<<HTML
  
