@@ -37,6 +37,7 @@ if (isset($_POST['update']))
 if ( isset( $_POST['create'] ) )
 {
   $metadataID = $_POST['metadataID'];
+  settype( $metadataID, 'int' );
 
   // We have to check if all the fields have data before going on.
   $query  = "SELECT institution, inst_abbrev, dbname, dbuser, dbpasswd, dbhost, limshost, " .
