@@ -151,6 +151,7 @@ function do_delete()
 {
   global $link;
   $personID = $_POST['personID'];
+  settype( $personID, 'int' );
 
   $query = "DELETE FROM people " .
            "WHERE personID = $personID ";
