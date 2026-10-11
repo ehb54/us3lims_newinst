@@ -305,9 +305,11 @@ function email_admin( $institution )
 
   global $org_name, $admin, $admin_email;
 
+  // Only config.php, never get_meta_info.php: that file's unconditional
+  // $admin_email = $_POST['admin_email'] would silently replace the site's
+  // own admin_email (just set above) with whatever address the requester
+  // typed into the form -- the exact bug this fix exists to close.
   include 'config.php';
-  include 'get_meta_info.php';
-
 
   $email = $admin_email;
 
