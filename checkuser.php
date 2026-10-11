@@ -38,7 +38,7 @@ $md5pass = md5($passwd);
 
 // Find the id of the record with the same e-mail address:
 
-$query  = "SELECT * FROM people WHERE email='$email'";
+$query  = "SELECT * FROM people WHERE email='" . mysqli_real_escape_string($link, $email) . "'";
 $result = mysqli_query($link,$query)
           or die( "Query failed : $query<br />\n" . mysqli_error($link) );
 $row    = mysqli_fetch_assoc($result);
