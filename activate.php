@@ -20,11 +20,11 @@ if (! isset($_GET['id']) || ! isset($_GET['code'] ) )
 
 $userid = $_GET['id'];
 settype( $userid, 'int' );       // Removes any remaining characters in URL
-$code   = $_GET['code'];
+$code   = mysqli_real_escape_string($link, $_GET['code']);
 
 $query = "UPDATE people SET activated = 1 " .
          "WHERE personID=$userid AND password='$code' AND activated = 0 AND account_enabled = 1";
-mysqli_query($link,$query) 
+mysqli_query($link,$query)
       or die ("Query failed : $query<br/>" . mysqli_error($link));
 
 $query = "SELECT count(*) FROM people " .
