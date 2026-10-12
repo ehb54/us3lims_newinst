@@ -114,7 +114,15 @@ if ( $base_overlay_mode )
     'secure_user'    => $secure_user,
     'secure_pw'      => $secure_pw,
     'last_update'    => $today,
-    'copyright_date' => $year
+    'copyright_date' => $year,
+    // Written explicitly, matching the legacy generator just below (round-12
+    // nit, newinst#27) -- omitting them just let the instance inherit the
+    // v1 base's own default (also false), but left this path unable to
+    // state its PAM/GMP state the way the legacy path always has. The
+    // documented manual edit (CONFIGURATION.md) remains how a site actually
+    // turns either on for one instance.
+    'enable_GMP'     => false,
+    'enable_PAM'     => false
   );
 
   $written = us3_newinst_write_base_overlay(
