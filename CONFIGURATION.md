@@ -34,3 +34,11 @@ existing overlay or `config.php` is never overwritten, even by a concurrent run.
 The current `create_instance.php` setup script requests `--base-overlay` and
 checks the installed base and instance directory first. Other callers remain
 on legacy generation until they are migrated explicitly.
+
+## Seeding developer accounts into new instances
+
+`create_instance.php`'s `add_admins()` seeds the UltraScan developer accounts
+into every new instance by default, each with the site's own superuser
+password hash. Set `$seed_developer_accounts = false;` in `config.php` to
+turn this off for a site; the function stays available (unset or `true`
+keeps the existing default behavior).

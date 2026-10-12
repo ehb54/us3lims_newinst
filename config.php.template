@@ -61,6 +61,12 @@ $last_update        = '2020/05/03'; # the date the website was last updated
 $copyright_date     = '2020'; # copyright date
 $current_year       = date( 'Y' );
 
+// create_instance.php's add_admins() seeds the UltraScan developer accounts
+// into every new instance by default, each with the site's own superuser
+// password hash -- a site can turn that off here instead, without losing
+// the function (round-12 should-fix, newinst#27).
+$seed_developer_accounts = true;
+
 //////////// End of user specific configuration
 
 // ensure a trailing slash

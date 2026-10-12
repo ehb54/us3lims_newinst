@@ -461,8 +461,12 @@ function setup_DB( $metadataID )
   mysqli_query($link2,$query) 
         or die("Query failed : $query<br />\n" . mysqli_error($link2));
 
-  // Add the us3 admins to this database
-  add_admins( $link2 );
+  // Add the us3 admins to this database, unless this site has opted out
+  // (round-12 should-fix, newinst#27) -- true by default, so existing
+  // behavior is unchanged until a site admin sets it explicitly.
+  global $seed_developer_accounts;
+  if ( ! isset( $seed_developer_accounts ) || $seed_developer_accounts )
+    add_admins( $link2 );
 
   // Update status in metadata DB
   global $link, $dbhost, $dbusername, $dbpasswd, $dbname;
