@@ -12,16 +12,16 @@ $us3pwentry         = function_exists( 'posix_getpwnam' ) ? posix_getpwnam( 'us3
 $us3base            = ( $us3pwentry ? $us3pwentry['dir'] : '/home/us3' ) . '/lims/';
 $cfgfile            = $us3base . '.us3lims.ini';
 $configs            = parse_ini_file( $cfgfile, true );
-$org_name           = 'UltraScan3 LIMS New Instance Setup';
-$org_site           = 'uslims.uleth.ca/uslims3_newlims';
-$site_author        = 'Borries Demeler, University of Texas Health Science Center';
+$org_name           = 'UltraScan3 LIMS New Instance Setup'; # CHANGE-ME: your organization's name
+$org_site           = 'CHANGE-ME.example.org/uslims3_newlims';
+$site_author        = 'CHANGE-ME: site contact name and affiliation';
 $site_keywords      = 'ultrascan analytical ultracentrifugation lims';
                       # The website keywords (meta tag)
 $site_desc          = 'Website to set up a new instance of the UltraScan3 LIMS portal'; # Site description
 
-$admin              = 'Gary Gorbet';
-$admin_phone        = 'Office: (210) 767-2761<br />Fax: (210) 567-6595';
-$admin_email        = 'gegorbet@gmail.com';
+$admin              = 'CHANGE-ME: site administrator name';
+$admin_phone        = 'Office: <br />Fax: ';
+$admin_email        = 'us3-admin@CHANGE-ME.example.org';
 
 $dbusername         = 'new_us3user';  # the name of the MySQL user
 $dbpasswd           = $configs[ 'newus3' ][ 'password' ]; # the password for the MySQL user
