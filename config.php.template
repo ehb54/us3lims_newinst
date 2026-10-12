@@ -47,6 +47,11 @@ $output_dir         = $us3base . 'database/instances/';       # Where db creatio
 $class_dir          = '/srv/www/htdocs/common/class/';        # Production class path
 //$class_dir          = '/srv/www/htdocs/common/class_devel/';  # Development class path
 //$class_dir          = '/srv/www/htdocs/common/class_local/';  # Local class path
+// Shared header/footer/topmenu partials, used by every page here via
+// "include $common_dir . 'footer.php'" etc. -- round-12 blocker,
+// dbinst#57/newinst#27/webinfo#17: this was never set anywhere, so every
+// page lost its CSS, menu and footer.
+$common_dir         = '/srv/www/htdocs/common/';
 $sql_dir            = $us3base . 'database/sql/'; # Where the sql script files are
 $disclaimer_file    = ''; # the name of a text file with disclaimer info
 

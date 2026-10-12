@@ -192,6 +192,7 @@ $text = <<<TEXT
 \$class_dir          = '/srv/www/htdocs/common/class/';       # Production class path
 //\$class_dir          = '/srv/www/htdocs/common/class_devel/'; # Development class path
 //\$class_dir          = '/srv/www/htdocs/common/class_local/'; # Local class path
+\$common_dir         = '/srv/www/htdocs/common/';             # Shared header/footer/topmenu partials
 \$disclaimer_file    = ''; # the name of a text file with disclaimer info
 
 // Dates
@@ -219,6 +220,9 @@ if ( \$submit_dir[strlen(\$submit_dir) - 1] != '/' )
 
 if ( \$class_dir[strlen(\$class_dir) - 1] != '/' )
   \$class_dir .= '/';
+
+if ( \$common_dir[strlen(\$common_dir) - 1] != '/' )
+  \$common_dir .= '/';
 
 /* Define our file paths */
 if ( ! defined('HOME_DIR') ) 
