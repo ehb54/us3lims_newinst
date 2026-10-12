@@ -87,7 +87,7 @@ function us3_newinst_require_dbinst_loader( $dbinst_dir )
   return $loader;
 }
 
-function us3_newinst_write_temp( $destination, $source, $mode, $group = null )
+function us3_newinst_write_temp( $destination, $source, $mode, $group = null, $owner = null )
 {
   $directory = dirname( $destination );
   if ( !is_dir( $directory ) || !is_writable( $directory ) )
@@ -114,6 +114,13 @@ function us3_newinst_write_temp( $destination, $source, $mode, $group = null )
     @unlink( $temporary );
     us3_newinst_config_fail(
       "could not set group $group on temporary file in $directory" );
+  }
+
+  if ( $owner !== null && !@chown( $temporary, $owner ) )
+  {
+    @unlink( $temporary );
+    us3_newinst_config_fail(
+      "could not set owner $owner on temporary file in $directory" );
   }
 
   return $temporary;
@@ -157,9 +164,22 @@ function us3_newinst_write_base_overlay( $instance, $overlay_values,
     us3_newinst_config_fail(
       'could not read the group of ' . dirname( $overlay_path ) );
 
+  ## Owned by us3 explicitly, not by whoever runs this tool -- round-12
+  ## should-fix, newinst#27, matching dbinst's migrate_instance_config.php
+  ## fix for the exact same gap. Run as root, as --base-overlay normally is,
+  ## the overlay used to end up root:<web group>: php-fpm (in the web
+  ## group) kept working, but us3 -- the account submitone.php and the
+  ## other CLI scripts actually run as -- could not read it at all, failing
+  ## GMP submissions at config load with no clearer sign than "submitone.php
+  ## exited without submitting the job".
+  $us3_pw = function_exists( 'posix_getpwnam' ) ? posix_getpwnam( 'us3' ) : false;
+  if ( !$us3_pw )
+    us3_newinst_config_fail(
+      'could not resolve the us3 account; the overlay must be owned by it, not by whoever runs this tool' );
+
   $overlay_temp = us3_newinst_write_temp(
     $overlay_path, us3_newinst_overlay_source( $contract ), 0640,
-    $overlay_group );
+    $overlay_group, $us3_pw[ 'uid' ] );
   try
   {
     $shim_temp = us3_newinst_write_temp(
