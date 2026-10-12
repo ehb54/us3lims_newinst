@@ -84,7 +84,7 @@ else
 </div>
 
 <?php
-include 'footer.php';
+include $common_dir . 'footer.php';
 exit();
 
 // Function to redirect to prior record
@@ -151,6 +151,7 @@ function do_delete()
 {
   global $link;
   $personID = $_POST['personID'];
+  settype( $personID, 'int' );
 
   $query = "DELETE FROM people " .
            "WHERE personID = $personID ";

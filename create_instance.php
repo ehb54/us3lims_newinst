@@ -51,7 +51,7 @@ include 'header.php';
 </div>
 
 <?php
-include 'footer.php';
+include $common_dir . 'footer.php';
 exit();
 
 function do_step1()
@@ -554,40 +554,6 @@ function add_admins( $link2 )
               "userNamePAM   = 'alexsav.science@gmail.com' " .
               $where ;
   $result = mysqli_query( $link2, $query );
-  if ( ! $result )
-    echo "Query failed : $query\n" . mysqli_error($link2);
-
-  if ( in_array( 'gegorbet@gmail.com', $email_list ) )
-  {
-    $query  = "UPDATE people SET ";
-    $where  = "WHERE email   = 'gegorbet@gmail.com' ";
-  }
-
-  else
-  {
-    $guid   = uuid();
-    $query  = "INSERT INTO people SET " .
-              "personGUID    = '$guid', " .
-              "email = 'gegorbet@gmail.com', ";
-    $where  = "";
-  }
-
-  $query   .= "fname         = 'Gary', " .
-              "lname         = 'Gorbet', " .
-              "address       = '32 Campus Drive', " .
-              "city          = 'Missoula', " .
-              "state         = 'MT', " .
-              "zip           = '59812', " .
-              "country       = 'US', " .
-              "phone         = '832-466-9211', " .
-              "password      = '$md5_super', "  .
-              "organization  = 'University of Montana', " .
-              "username      = 'us3gorbet', " .
-              "activated     = 1, " .
-              "userlevel     = 4, " .
-              "userNamePAM   = 'gegorbet@gmail.com' " .
-              $where ;
-  $result   = mysqli_query( $link2, $query );
   if ( ! $result )
     echo "Query failed : $query\n" . mysqli_error($link2);
 

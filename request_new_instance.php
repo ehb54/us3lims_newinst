@@ -66,7 +66,7 @@ else                  // No, just display the captcha
 </div>
 
 <?php
-include 'footer.php';
+include $common_dir . 'footer.php';
 exit();
 
 // Function to create the new record
@@ -305,11 +305,13 @@ function email_admin( $institution )
 
   global $org_name, $admin, $admin_email;
 
+  // Only config.php, never get_meta_info.php: that file's unconditional
+  // $admin_email = $_POST['admin_email'] would silently replace the site's
+  // own admin_email (just set above) with whatever address the requester
+  // typed into the form -- the exact bug this fix exists to close.
   include 'config.php';
-  include 'get_meta_info.php';
 
-
-  $email = 'demeler@gmail.com,alexsav.science@gmail.com,gegorbet@gmail.com,emre.brookes@umontana.edu';
+  $email = $admin_email;
 
   $now = time();
   $subject = "A new UltraScan III instance has been requested - $now";
