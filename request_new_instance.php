@@ -142,7 +142,7 @@ function do_create()
     mysqli_query( $link, $query )
       or die("Query failed : $query<br />\n" . mysqli_error($link));
 
-    email_admin( $institution );
+    email_admin( $institution, $admin_fname, $admin_lname );
     show_record();
   }
 
@@ -299,7 +299,7 @@ echo<<<HTML
 HTML;
 }
 
-function email_admin( $institution )
+function email_admin( $institution, $requester_fname = '', $requester_lname = '' )
 {
   // Mail the admin that a new instance has been requested
 
@@ -313,9 +313,27 @@ function email_admin( $institution )
 
   $email = $admin_email;
 
+  // $admin_email isn't guaranteed to be a real address -- us3lims-roles'
+  // own role default is the literal string "N/A" on a site that hasn't set
+  // it. mail() just returns false and nothing is ever told; log it instead
+  // of failing completely silently (round-12 nit, newinst#27).
+  if ( ! filter_var( $email, FILTER_VALIDATE_EMAIL ) )
+  {
+    error_log( "newinst request_new_instance.php: admin_email '$email' does not look like a"
+             . " valid address -- the new-instance request for '$institution' was not mailed" );
+    return;
+  }
+
   $now = time();
   $subject = "A new UltraScan III instance has been requested - $now";
 
+  // $requester_fname/$requester_lname: the two function parameters this
+  // fix added. Before, this referenced $admin_fname/$admin_lname as bare
+  // globals -- which get_meta_info.php does set in the caller's own scope
+  // to the requester's own posted name, but a function never sees a
+  // caller's locals without an explicit parameter or `global`, and
+  // config.php (included just above) doesn't set them either. The mail
+  // went out with both silently blank.
   $message = "Dear $admin,
   $institution has requested a new UltraScan III instance. Please go to
   $org_site and set it up.
@@ -324,7 +342,7 @@ function email_admin( $institution )
   Thanks!
   The $org_name Admins
   at $org_site
-  by $admin_fname $admin_lname .
+  by $requester_fname $requester_lname .
 
   This is an automated email, do not reply!";
 
