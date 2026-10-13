@@ -114,15 +114,25 @@ if ( $base_overlay_mode )
     'secure_user'    => $secure_user,
     'secure_pw'      => $secure_pw,
     'last_update'    => $today,
-    'copyright_date' => $year,
-    // Written explicitly, matching the legacy generator just below (round-12
-    // nit, newinst#27) -- omitting them just let the instance inherit the
-    // v1 base's own default (also false), but left this path unable to
-    // state its PAM/GMP state the way the legacy path always has. The
-    // documented manual edit (CONFIGURATION.md) remains how a site actually
-    // turns either on for one instance.
-    'enable_GMP'     => false,
-    'enable_PAM'     => false
+    'copyright_date' => $year
+    // enable_GMP/enable_PAM deliberately NOT written here (round-13
+    // should-fix, newinst#27): they are optional overlay keys
+    // (us3_dbinst_config_overlay_optional_types(), dbinst's
+    // dbinst_config_loader.php) precisely so an instance can inherit
+    // whatever the v1 base configures unless an operator chooses to
+    // override it. A round-12 fix wrote them here as a hardcoded `false`,
+    // reasoning that the base's own default was also false -- true only
+    // for a base that has never turned either on. On a base that does
+    // (a GMP- or PAM-enabled site), this silently forced every new
+    // instance back off, undoing the base's own setting with no way for
+    // this creation path to express otherwise. newinst still has no
+    // creation-time choice for either (CONFIGURATION.md documents the
+    // manual edit as the only way to turn one on for a single instance);
+    // not writing the key at all is the only way to let an instance
+    // inherit the base's real value. Unlike this path, the legacy
+    // generator just below has no base to inherit from at all -- its own
+    // hardcoded false is that format's only sensible default, not a
+    // precedent to copy here.
   );
 
   $written = us3_newinst_write_base_overlay(
