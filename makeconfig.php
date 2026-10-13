@@ -173,7 +173,7 @@ $text = <<<TEXT
 \$configs            = parse_ini_file( \$cfgfile, true );
 \$org_name           = 'UltraScan3 LIMS portal';
 \$org_site           = {$v['org_site']};
-\$site_author        = 'Borries Demeler, University of Lethbridge';
+\$site_author        = 'CHANGE-ME: site contact name and affiliation';
 \$site_keywords      = 'ultrascan analytical ultracentrifugation lims';
                       # The website keywords (meta tag)
 \$site_desc          = 'Website for the UltraScan3 LIMS portal'; # Site description

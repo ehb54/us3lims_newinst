@@ -327,6 +327,13 @@ function email_admin( $institution, $requester_fname = '', $requester_lname = ''
   $now = time();
   $subject = "A new UltraScan III instance has been requested - $now";
 
+  // us3lims-roles' own role default for $admin (the recipient's name, not
+  // $admin_email, already validated above) is the literal string "N/A" on
+  // a site that has set a real admin_email but never set a real admin
+  // name -- greeting the mail "Dear N/A," instead of something that
+  // actually reads as a greeting (round-13 nit, newinst#27).
+  $greeting = ( $admin === '' || strcasecmp( $admin, 'N/A' ) === 0 ) ? 'Administrator' : $admin;
+
   // $requester_fname/$requester_lname: the two function parameters this
   // fix added. Before, this referenced $admin_fname/$admin_lname as bare
   // globals -- which get_meta_info.php does set in the caller's own scope
@@ -334,7 +341,7 @@ function email_admin( $institution, $requester_fname = '', $requester_lname = ''
   // caller's locals without an explicit parameter or `global`, and
   // config.php (included just above) doesn't set them either. The mail
   // went out with both silently blank.
-  $message = "Dear $admin,
+  $message = "Dear $greeting,
   $institution has requested a new UltraScan III instance. Please go to
   $org_site and set it up.
 
