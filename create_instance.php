@@ -357,8 +357,35 @@ function setup_DB( $metadataID )
   $admin_pw_hash = MD5( $admin_pw );
 
   // Now switch databases
-  $link2 = mysqli_connect( $new_dbhost, $new_dbuser, $new_dbpasswd, $new_dbname ) 
+  $link2 = mysqli_connect( $new_dbhost, $new_dbuser, $new_dbpasswd, $new_dbname )
            or die("Could not connect to database server or select $new_dbname. ");
+
+  // Mark this brand-new instance's people_audit as already UTC (round-14
+  // fix, dbutils#52 should-fix): this instance's own write_audit_row() has
+  // always written UTC from its very first row, so nothing here ever
+  // needs the local-time-to-UTC conversion uslims_upgrade.php and
+  // dbupgrade's stage1/stage2 run for a genuinely pre-existing instance.
+  // Without this, a later uslims_upgrade.php --apply (run periodically by
+  // the roles playbook) or a dbupgrade export/import finds no boundary
+  // recorded at all once this instance has accumulated real rows, and
+  // treats them as needing conversion -- shifting already-correct data.
+  // Marking it done here, at creation, closes the gap at the source
+  // instead of asking every later consumer to guess retroactively. Table
+  // shape matches dbutils' own create_people_audit_utc_migration_marker_
+  // table()/mark_people_audit_utc_migration_done() (utility.php) exactly;
+  // duplicated here rather than required directly, since that file's own
+  // top-level `$STDERR = STDERR;` assumes a CLI SAPI and is not guaranteed
+  // under php-fpm's.
+  mysqli_query( $link2, "CREATE TABLE IF NOT EXISTS _dbutils_people_audit_utc_migrated ("
+                       . " migrated_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,"
+                       . " from_time_zone VARCHAR(64) NOT NULL,"
+                       . " system_time_zone VARCHAR(64) NULL,"
+                       . " max_audit_id INT UNSIGNED NULL )" )
+        or die("Query failed creating the UTC-migration marker table<br />\n" . mysqli_error($link2));
+  mysqli_query( $link2, "INSERT INTO _dbutils_people_audit_utc_migrated"
+                       . " ( from_time_zone, system_time_zone, max_audit_id )"
+                       . " VALUES ( 'n/a (newinst-created instance; always UTC)', NULL, 0 )" )
+        or die("Query failed marking the UTC migration done<br />\n" . mysqli_error($link2));
 
   // Administrator record
   $guid = uuid();
