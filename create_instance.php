@@ -5,7 +5,7 @@
  * Use the information in the metadata table to set up a new db instance
  *
  */
-session_start();
+include 'session.php';
 
 // Are we authorized to view this page?
 if ( ! isset($_SESSION['id']) )
@@ -51,7 +51,7 @@ include 'header.php';
 </div>
 
 <?php
-include 'footer.php';
+include $common_dir . 'footer.php';
 exit();
 
 function do_step1()
@@ -162,7 +162,7 @@ Admin Investigator Setup Information
 Investigator Email: $admin_email
 Investigator Password: $admin_pw
 
-LIMS URL:              http://$new_limshost/$new_dbname
+LIMS URL:              https://$new_limshost/$new_dbname
 TEXT;
 
   global $output_dir;
@@ -230,12 +230,20 @@ function do_step2()
   $makeconfigfile = $full_path . 'makeconfig.php';
  
   $branch_cmd = "";
-  $cnfpath = exec( "ls ~us3/lims/database/utils/db_config.php" );
+  $cnfpath = us3_home() . '/lims/database/utils/db_config.php';
   if ( file_exists( $cnfpath ) ) {
      include $cnfpath;
-     $branch_cmd = "&& git checkout " . $repo_branches[ "https://github.com/ehb54/us3lims_dbinst.git" ];
+     $dbinst_branch = $repo_branches[ "https://github.com/ehb54/us3lims_dbinst.git" ] ?? '';
+     ## A missing or empty key used to build "&& git checkout " with no
+     ## argument. git checkout with nothing to check out exits 0 and changes
+     ## nothing, so ( cd ... $branch_cmd ) || exit 1 never caught it: the
+     ## instance was silently left on whatever branch the clone defaulted to.
+     if ( trim( $dbinst_branch ) !== '' ) {
+        $branch_cmd = "&& git checkout " . $dbinst_branch;
+     }
   }
 
+  $instances_dir = us3_home() . '/lims/etc/config/instances';
   $setupLIMS = <<<TEXT
 #!/bin/bash
 # A script to create the $institution LIMS
@@ -243,18 +251,35 @@ function do_step2()
 DIR=\$(pwd)
 htmldir="/srv/www/htdocs/uslims3"
 
-git clone https://github.com/ehb54/us3lims_dbinst.git \$htmldir/$new_dbname
-( cd \$htmldir/$new_dbname $branch_cmd )
-mkdir \$htmldir/$new_dbname/data
+# Each step is checked. An unchecked clone meant a network or permission failure
+# fell through to a mkdir inside a directory that does not exist, and then to
+# makeconfig against a missing instance, leaving a half-made instance and an
+# error that pointed at the wrong step.
+git clone https://github.com/ehb54/us3lims_dbinst.git \$htmldir/$new_dbname || {
+  echo "git clone of us3lims_dbinst into \$htmldir/$new_dbname failed" >&2
+  exit 1
+}
+( cd \$htmldir/$new_dbname $branch_cmd ) || {
+  echo "could not select the dbinst branch in \$htmldir/$new_dbname" >&2
+  exit 1
+}
+mkdir \$htmldir/$new_dbname/data || exit 1
 #sudo chgrp apache \$htmldir/$new_dbname/data
-chmod g+w \$htmldir/$new_dbname/data
+chmod g+w \$htmldir/$new_dbname/data || exit 1
 
 new_orgsite=$(hostname)
 new_ipaddress=$(resolveip -s `hostname`)
 
-#Now make the config.php file
-php $makeconfigfile $new_dbname \$new_orgsite \$new_ipaddress
-vi \$htmldir/$new_dbname/config.php
+# Create the validated instance overlay and the small compatibility config.php.
+# The host base must be provisioned before running this setup script. Its
+# filename is versioned and owned by the cloned dbinst's loader, so makeconfig
+# below is what checks for it; repeating the name here would go stale at the
+# next contract version and report the wrong missing file.
+test -w $instances_dir || {
+  echo "Unwritable $instances_dir" >&2
+  exit 1
+}
+php $makeconfigfile $new_dbname \$new_orgsite \$new_ipaddress --base-overlay || exit 1
 
 echo "setting default cluster authorizations"
 echo php ~us3/lims/bin/set_cluster_authorizations.php $new_dbname updatepeople
@@ -283,11 +308,11 @@ TEXT;
 
   <p>A script file called $new_LIMSfile has been created for you in the us3 
      user&rsquo;s $instance_dir directory that does all of this. As the us3 
-     user, execute the script. At the end of the process the script will
-     present the generated config.php for you to edit. Double check the file 
-     using this information:</p>
+     user, execute the script. It creates the instance overlay and
+     config.php and stops if anything fails. Check its output against
+     this information:</p>
 
-  <table cellspacing='0' cellpadding='3' style='text-align:left;'>
+  <table cellspacing='0' cellpadding='3' class='text-left'>
     <tr><th>Database name:</th><td>$new_dbname</td></tr>
     <tr><th>Database user:</th><td>$new_dbuser</td></tr>
     <tr><th>DB User Password:</th><td>$new_dbpasswd</td></tr>
@@ -332,8 +357,62 @@ function setup_DB( $metadataID )
   $admin_pw_hash = MD5( $admin_pw );
 
   // Now switch databases
-  $link2 = mysqli_connect( $new_dbhost, $new_dbuser, $new_dbpasswd, $new_dbname ) 
+  $link2 = mysqli_connect( $new_dbhost, $new_dbuser, $new_dbpasswd, $new_dbname )
            or die("Could not connect to database server or select $new_dbname. ");
+
+  // Mark this brand-new instance's people_audit as already UTC: this
+  // instance's own write_audit_row() has always written UTC from its
+  // very first row, so nothing here ever
+  // needs the local-time-to-UTC conversion uslims_upgrade.php and
+  // dbupgrade's stage1/stage2 run for a genuinely pre-existing instance.
+  // Without this, a later uslims_upgrade.php --apply (run periodically by
+  // the roles playbook) or a dbupgrade export/import finds no boundary
+  // recorded at all once this instance has accumulated real rows, and
+  // treats them as needing conversion -- shifting already-correct data.
+  // Marking it done here, at creation, closes the gap at the source
+  // instead of asking every later consumer to guess retroactively. Table
+  // shape matches dbutils' own create_people_audit_utc_migration_marker_
+  // table()/mark_people_audit_utc_migration_done() (utility.php) exactly;
+  // duplicated here rather than required directly, since that file's own
+  // top-level `$STDERR = STDERR;` assumes a CLI SAPI and is not guaranteed
+  // under php-fpm's.
+  //
+  // Round 15 nit, newinst#27: "always UTC from its very first row" is
+  // only true for the dbinst code this instance's dbinst_branch override
+  // actually resolves to -- written unconditionally before, regardless of
+  // which branch do_step2()'s own generated setup script will later check
+  // out. An explicit override to something other than the default pin
+  // cannot be assumed UTC-aware (an older branch predating
+  // write_audit_row()'s own created_at_utc flag would still write local
+  // time), so the marker is skipped for that case; dbutils' own migration
+  // is content-driven (it reads each row's created_at_utc flag directly,
+  // not only this marker), so skipping it here costs nothing but one
+  // later, correctly-triggered conversion run instead of a possibly-wrong
+  // "nothing to do" claim. Re-reads db_config.php independently rather
+  // than threading do_step2()'s own $dbinst_branch through as a
+  // parameter: that function computes it only after already calling this
+  // one, so it is not available here to receive.
+  $setup_db_dbinst_branch = '';
+  $setup_db_cnfpath = us3_home() . '/lims/database/utils/db_config.php';
+  if ( file_exists( $setup_db_cnfpath ) ) {
+    include $setup_db_cnfpath;
+    $setup_db_dbinst_branch = $repo_branches[ "https://github.com/ehb54/us3lims_dbinst.git" ] ?? '';
+  }
+  // An unrendered ansible template placeholder ("SET-dbinst_branch", left
+  // behind on a host db_config.php was never templated onto) names no
+  // real branch either -- the same as the key being missing or empty.
+  if ( trim( $setup_db_dbinst_branch ) === '' || preg_match( '/^SET-/', trim( $setup_db_dbinst_branch ) ) ) {
+    mysqli_query( $link2, "CREATE TABLE IF NOT EXISTS _dbutils_people_audit_utc_migrated ("
+                         . " migrated_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,"
+                         . " from_time_zone VARCHAR(64) NOT NULL,"
+                         . " system_time_zone VARCHAR(64) NULL,"
+                         . " max_audit_id INT UNSIGNED NULL )" )
+          or die("Query failed creating the UTC-migration marker table<br />\n" . mysqli_error($link2));
+    mysqli_query( $link2, "INSERT INTO _dbutils_people_audit_utc_migrated"
+                         . " ( from_time_zone, system_time_zone, max_audit_id )"
+                         . " VALUES ( 'n/a (newinst-created instance; always UTC)', NULL, 0 )" )
+          or die("Query failed marking the UTC migration done<br />\n" . mysqli_error($link2));
+  }
 
   // Administrator record
   $guid = uuid();
@@ -436,8 +515,12 @@ function setup_DB( $metadataID )
   mysqli_query($link2,$query) 
         or die("Query failed : $query<br />\n" . mysqli_error($link2));
 
-  // Add the us3 admins to this database
-  add_admins( $link2 );
+  // Add the us3 admins to this database, unless this site has opted out
+  // (round-12 should-fix, newinst#27) -- true by default, so existing
+  // behavior is unchanged until a site admin sets it explicitly.
+  global $seed_developer_accounts;
+  if ( ! isset( $seed_developer_accounts ) || $seed_developer_accounts )
+    add_admins( $link2 );
 
   // Update status in metadata DB
   global $link, $dbhost, $dbusername, $dbpasswd, $dbname;
@@ -529,40 +612,6 @@ function add_admins( $link2 )
               "userNamePAM   = 'alexsav.science@gmail.com' " .
               $where ;
   $result = mysqli_query( $link2, $query );
-  if ( ! $result )
-    echo "Query failed : $query\n" . mysqli_error($link2);
-
-  if ( in_array( 'gegorbet@gmail.com', $email_list ) )
-  {
-    $query  = "UPDATE people SET ";
-    $where  = "WHERE email   = 'gegorbet@gmail.com' ";
-  }
-
-  else
-  {
-    $guid   = uuid();
-    $query  = "INSERT INTO people SET " .
-              "personGUID    = '$guid', " .
-              "email = 'gegorbet@gmail.com', ";
-    $where  = "";
-  }
-
-  $query   .= "fname         = 'Gary', " .
-              "lname         = 'Gorbet', " .
-              "address       = '32 Campus Drive', " .
-              "city          = 'Missoula', " .
-              "state         = 'MT', " .
-              "zip           = '59812', " .
-              "country       = 'US', " .
-              "phone         = '832-466-9211', " .
-              "password      = '$md5_super', "  .
-              "organization  = 'University of Montana', " .
-              "username      = 'us3gorbet', " .
-              "activated     = 1, " .
-              "userlevel     = 4, " .
-              "userNamePAM   = 'gegorbet@gmail.com' " .
-              $where ;
-  $result   = mysqli_query( $link2, $query );
   if ( ! $result )
     echo "Query failed : $query\n" . mysqli_error($link2);
 

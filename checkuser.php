@@ -5,7 +5,9 @@
  * Verify user credentials
  *
  */
-session_start();
+include 'config.php';
+include 'require_https.php';
+include 'session.php';
 
 include 'config.php';
 include 'db.php';
@@ -36,7 +38,7 @@ $md5pass = md5($passwd);
 
 // Find the id of the record with the same e-mail address:
 
-$query  = "SELECT * FROM people WHERE email='$email'";
+$query  = "SELECT * FROM people WHERE email='" . mysqli_real_escape_string($link, $email) . "'";
 $result = mysqli_query($link,$query)
           or die( "Query failed : $query<br />\n" . mysqli_error($link) );
 $row    = mysqli_fetch_assoc($result);
@@ -120,7 +122,7 @@ if ( $row["account_enabled"] != 1 )
 $query = "UPDATE people SET lastLogin=now() WHERE personID=$personID";
 mysqli_query($link,$query);
 
-header("Location: http://$org_site/index.php");
+header("Location: index.php");
 exit();
 
 function remove_session()
