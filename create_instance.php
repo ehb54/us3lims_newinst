@@ -376,16 +376,43 @@ function setup_DB( $metadataID )
   // duplicated here rather than required directly, since that file's own
   // top-level `$STDERR = STDERR;` assumes a CLI SAPI and is not guaranteed
   // under php-fpm's.
-  mysqli_query( $link2, "CREATE TABLE IF NOT EXISTS _dbutils_people_audit_utc_migrated ("
-                       . " migrated_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,"
-                       . " from_time_zone VARCHAR(64) NOT NULL,"
-                       . " system_time_zone VARCHAR(64) NULL,"
-                       . " max_audit_id INT UNSIGNED NULL )" )
-        or die("Query failed creating the UTC-migration marker table<br />\n" . mysqli_error($link2));
-  mysqli_query( $link2, "INSERT INTO _dbutils_people_audit_utc_migrated"
-                       . " ( from_time_zone, system_time_zone, max_audit_id )"
-                       . " VALUES ( 'n/a (newinst-created instance; always UTC)', NULL, 0 )" )
-        or die("Query failed marking the UTC migration done<br />\n" . mysqli_error($link2));
+  //
+  // Round 15 nit, newinst#27: "always UTC from its very first row" is
+  // only true for the dbinst code this instance's dbinst_branch override
+  // actually resolves to -- written unconditionally before, regardless of
+  // which branch do_step2()'s own generated setup script will later check
+  // out. An explicit override to something other than the default pin
+  // cannot be assumed UTC-aware (an older branch predating
+  // write_audit_row()'s own created_at_utc flag would still write local
+  // time), so the marker is skipped for that case; dbutils' own migration
+  // is content-driven (it reads each row's created_at_utc flag directly,
+  // not only this marker), so skipping it here costs nothing but one
+  // later, correctly-triggered conversion run instead of a possibly-wrong
+  // "nothing to do" claim. Re-reads db_config.php independently rather
+  // than threading do_step2()'s own $dbinst_branch through as a
+  // parameter: that function computes it only after already calling this
+  // one, so it is not available here to receive.
+  $setup_db_dbinst_branch = '';
+  $setup_db_cnfpath = us3_home() . '/lims/database/utils/db_config.php';
+  if ( file_exists( $setup_db_cnfpath ) ) {
+    include $setup_db_cnfpath;
+    $setup_db_dbinst_branch = $repo_branches[ "https://github.com/ehb54/us3lims_dbinst.git" ] ?? '';
+  }
+  // An unrendered ansible template placeholder ("SET-dbinst_branch", left
+  // behind on a host db_config.php was never templated onto) names no
+  // real branch either -- the same as the key being missing or empty.
+  if ( trim( $setup_db_dbinst_branch ) === '' || preg_match( '/^SET-/', trim( $setup_db_dbinst_branch ) ) ) {
+    mysqli_query( $link2, "CREATE TABLE IF NOT EXISTS _dbutils_people_audit_utc_migrated ("
+                         . " migrated_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,"
+                         . " from_time_zone VARCHAR(64) NOT NULL,"
+                         . " system_time_zone VARCHAR(64) NULL,"
+                         . " max_audit_id INT UNSIGNED NULL )" )
+          or die("Query failed creating the UTC-migration marker table<br />\n" . mysqli_error($link2));
+    mysqli_query( $link2, "INSERT INTO _dbutils_people_audit_utc_migrated"
+                         . " ( from_time_zone, system_time_zone, max_audit_id )"
+                         . " VALUES ( 'n/a (newinst-created instance; always UTC)', NULL, 0 )" )
+          or die("Query failed marking the UTC migration done<br />\n" . mysqli_error($link2));
+  }
 
   // Administrator record
   $guid = uuid();
