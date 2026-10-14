@@ -360,9 +360,9 @@ function setup_DB( $metadataID )
   $link2 = mysqli_connect( $new_dbhost, $new_dbuser, $new_dbpasswd, $new_dbname )
            or die("Could not connect to database server or select $new_dbname. ");
 
-  // Mark this brand-new instance's people_audit as already UTC (round-14
-  // fix, dbutils#52 should-fix): this instance's own write_audit_row() has
-  // always written UTC from its very first row, so nothing here ever
+  // Mark this brand-new instance's people_audit as already UTC: this
+  // instance's own write_audit_row() has always written UTC from its
+  // very first row, so nothing here ever
   // needs the local-time-to-UTC conversion uslims_upgrade.php and
   // dbupgrade's stage1/stage2 run for a genuinely pre-existing instance.
   // Without this, a later uslims_upgrade.php --apply (run periodically by
