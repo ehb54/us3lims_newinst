@@ -16,7 +16,7 @@ function emailsyntax_is_valid($email)
                     '(([-|_]?)\.([-|_]?)[0-9a-zA-Z]*([-|_]?[0-9a-zA-Z]+)+)*([-|_]?)$/';
 
   $pattern_domain = '/^([0-9a-zA-Z]+([-]?[0-9a-zA-Z]+)*)' .
-                    '(([-]?)\.([-]?)[0-9a-zA-Z]*([-]?[0-9a-zA-Z]+)+)*\.[a-z]{2,4}$/';
+                    '(([-]?)\.([-]?)[0-9a-zA-Z]*([-]?[0-9a-zA-Z]+)+)*\.[a-z]{2,63}$/';
 
   $match_local  = preg_match($pattern_local, $local);
   $match_domain = preg_match($pattern_domain, $domain);
