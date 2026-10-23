@@ -42,16 +42,30 @@ foreach ( $fields as $field )
 
 <?php
 
-// Are we being directed to save the data?
+// Are we being directed to save the data? Only after the captcha was
+// solved in this session.
 if ( isset( $_POST['create'] ) )
-  do_create();
+{
+  if ( empty( $_SESSION['captcha_solved'] ) )
+    do_captcha( "Please enter the code shown in the image first." );
+
+  else
+    do_create();
+}
 
 // No, so are we being directed to enter the data?
 else if ( isset( $_POST['enter_request'] ) )
 {
-  // Check if they match
-  if ( $_POST['captcha'] == $_SESSION['captcha'] )
+  // Check if they match. Each captcha gets one attempt, and a missing or
+  // empty captcha never matches.
+  $captcha = $_SESSION['captcha'] ?? '';
+  unset( $_SESSION['captcha'] );
+
+  if ( $captcha !== '' && hash_equals( $captcha, (string) ( $_POST['captcha'] ?? '' ) ) )
+  {
+    $_SESSION['captcha_solved'] = true;
     enter_record();
+  }
 
   else
     do_captcha( "Entered text doesn&rsquo;t match." );
@@ -117,6 +131,9 @@ function do_create()
 
   if ( empty( $message ) )
   {
+    // One solved captcha allows one request
+    unset( $_SESSION['captcha_solved'] );
+
     $query = "INSERT INTO metadata " .
              "SET institution  = '$institution', " .
              "inst_abbrev = '$inst_abbrev', " .
