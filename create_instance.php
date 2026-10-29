@@ -366,6 +366,17 @@ function setup_DB( $metadataID )
            or die("Could not connect to database server or select $new_dbname. ");
 
 
+  // Dispatch scheduler tables, from common's single definition (the same one
+  // dbutils' dispatch_instance_tables migration applies on upgrade).
+  global $class_dir;
+  $dispatch_schema = rtrim( (string) $class_dir, '/' ) . '/dispatch_schema.php';
+  if ( is_file( $dispatch_schema ) ) {
+    require_once $dispatch_schema;
+    $dispatch_errors = dispatch_schema_ensure( $link2, dispatch_instance_table_ddl( $new_dbname ) );
+    if ( $dispatch_errors )
+      die( "Query failed creating the dispatch tables<br />\n" . htmlspecialchars( implode( '; ', $dispatch_errors ) ) );
+  }
+
   // Administrator record
   $guid = uuid();
   $query  = "INSERT INTO people SET " .
