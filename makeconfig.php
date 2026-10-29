@@ -115,17 +115,12 @@ if ( $base_overlay_mode )
     'secure_pw'      => $secure_pw,
     'last_update'    => $today,
     'copyright_date' => $year
-    // enable_GMP/enable_PAM deliberately NOT written here (round-13
-    // should-fix, newinst#27): they are optional overlay keys
-    // (us3_dbinst_config_overlay_optional_types(), dbinst's
-    // dbinst_config_loader.php) precisely so an instance can inherit
-    // whatever the v1 base configures unless an operator chooses to
-    // override it. A round-12 fix wrote them here as a hardcoded `false`,
-    // reasoning that the base's own default was also false -- true only
-    // for a base that has never turned either on. On a base that does
-    // (a GMP- or PAM-enabled site), this silently forced every new
-    // instance back off, undoing the base's own setting with no way for
-    // this creation path to express otherwise. newinst still has no
+    // enable_GMP/enable_PAM deliberately NOT written here: they are
+    // optional overlay keys (us3_dbinst_config_overlay_optional_types(),
+    // dbinst's dbinst_config_loader.php) precisely so an instance can
+    // inherit whatever the v1 base configures unless an operator chooses
+    // to override it. A hardcoded `false` here would silently force every
+    // new instance off on a GMP- or PAM-enabled base. newinst has no
     // creation-time choice for either (CONFIGURATION.md documents the
     // manual edit as the only way to turn one on for a single instance);
     // not writing the key at all is the only way to let an instance

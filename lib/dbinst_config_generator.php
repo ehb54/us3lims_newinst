@@ -164,14 +164,11 @@ function us3_newinst_write_base_overlay( $instance, $overlay_values,
     us3_newinst_config_fail(
       'could not read the group of ' . dirname( $overlay_path ) );
 
-  ## Owned by us3 explicitly, not by whoever runs this tool -- round-12
-  ## should-fix, newinst#27, matching dbinst's migrate_instance_config.php
-  ## fix for the exact same gap. Run as root, as --base-overlay normally is,
-  ## the overlay used to end up root:<web group>: php-fpm (in the web
-  ## group) kept working, but us3 -- the account submitone.php and the
-  ## other CLI scripts actually run as -- could not read it at all, failing
-  ## GMP submissions at config load with no clearer sign than "submitone.php
-  ## exited without submitting the job".
+  ## Owned by us3 explicitly, not by whoever runs this tool, matching
+  ## dbinst's migrate_instance_config.php. Run as root, as --base-overlay
+  ## normally is, the overlay would otherwise be root:<web group>, which us3
+  ## (the account submitone.php and the other CLI scripts run as) cannot
+  ## read, failing GMP submissions at config load.
   $us3_pw = function_exists( 'posix_getpwnam' ) ? posix_getpwnam( 'us3' ) : false;
   if ( !$us3_pw )
     us3_newinst_config_fail(

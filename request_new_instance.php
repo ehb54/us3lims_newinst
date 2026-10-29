@@ -316,7 +316,7 @@ function email_admin( $institution, $requester_fname = '', $requester_lname = ''
   // $admin_email isn't guaranteed to be a real address -- us3lims-roles'
   // own role default is the literal string "N/A" on a site that hasn't set
   // it. mail() just returns false and nothing is ever told; log it instead
-  // of failing completely silently (round-12 nit, newinst#27).
+  // of failing completely silently.
   if ( ! filter_var( $email, FILTER_VALIDATE_EMAIL ) )
   {
     error_log( "newinst request_new_instance.php: admin_email '$email' does not look like a"
@@ -331,7 +331,7 @@ function email_admin( $institution, $requester_fname = '', $requester_lname = ''
   // $admin_email, already validated above) is the literal string "N/A" on
   // a site that has set a real admin_email but never set a real admin
   // name -- greeting the mail "Dear N/A," instead of something that
-  // actually reads as a greeting (round-13 nit, newinst#27).
+  // actually reads as a greeting.
   $greeting = ( $admin === '' || strcasecmp( $admin, 'N/A' ) === 0 ) ? 'Administrator' : $admin;
 
   // $requester_fname/$requester_lname: the two function parameters this

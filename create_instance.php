@@ -377,10 +377,9 @@ function setup_DB( $metadataID )
   // top-level `$STDERR = STDERR;` assumes a CLI SAPI and is not guaranteed
   // under php-fpm's.
   //
-  // Round 15 nit, newinst#27: "always UTC from its very first row" is
-  // only true for the dbinst code this instance's dbinst_branch override
-  // actually resolves to -- written unconditionally before, regardless of
-  // which branch do_step2()'s own generated setup script will later check
+  // "Always UTC from its very first row" is only true for the dbinst code
+  // this instance's dbinst_branch override actually resolves to, which is
+  // the branch do_step2()'s own generated setup script will later check
   // out. An explicit override to something other than the default pin
   // cannot be assumed UTC-aware (an older branch predating
   // write_audit_row()'s own created_at_utc flag would still write local
@@ -515,9 +514,9 @@ function setup_DB( $metadataID )
   mysqli_query($link2,$query) 
         or die("Query failed : $query<br />\n" . mysqli_error($link2));
 
-  // Add the us3 admins to this database, unless this site has opted out
-  // (round-12 should-fix, newinst#27) -- true by default, so existing
-  // behavior is unchanged until a site admin sets it explicitly.
+  // Add the us3 admins to this database, unless this site has opted out.
+  // True by default, so existing behavior is unchanged until a site admin
+  // sets it explicitly.
   global $seed_developer_accounts;
   if ( ! isset( $seed_developer_accounts ) || $seed_developer_accounts )
     add_admins( $link2 );
