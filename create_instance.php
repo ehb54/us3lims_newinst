@@ -205,6 +205,18 @@ TEXT;
 HTML;
 }
 
+// The clone's checkout for db_config.php's dbinst branch. A missing, empty or unrendered
+// "SET-dbinst_branch" value names no branch: git checkout with no argument exits 0 and changes
+// nothing, so it pins nothing instead.
+function dbinst_checkout_command( $branch )
+{
+  $branch = trim( (string) $branch );
+  if ( $branch === '' || strpos( $branch, 'SET-' ) === 0 ) {
+    return '';
+  }
+  return "&& git checkout " . escapeshellarg( $branch );
+}
+
 function do_step2()
 {
   global $link, $globaldbuser, $globaldbpasswd, $globaldbname, $globaldbhost;
@@ -233,14 +245,7 @@ function do_step2()
   $cnfpath = us3_home() . '/lims/database/utils/db_config.php';
   if ( file_exists( $cnfpath ) ) {
      include $cnfpath;
-     $dbinst_branch = $repo_branches[ "https://github.com/ehb54/us3lims_dbinst.git" ] ?? '';
-     ## A missing or empty key used to build "&& git checkout " with no
-     ## argument. git checkout with nothing to check out exits 0 and changes
-     ## nothing, so ( cd ... $branch_cmd ) || exit 1 never caught it: the
-     ## instance was silently left on whatever branch the clone defaulted to.
-     if ( trim( $dbinst_branch ) !== '' ) {
-        $branch_cmd = "&& git checkout " . $dbinst_branch;
-     }
+     $branch_cmd = dbinst_checkout_command( $repo_branches[ "https://github.com/ehb54/us3lims_dbinst.git" ] ?? '' );
   }
 
   $instances_dir = us3_home() . '/lims/etc/config/instances';
@@ -360,58 +365,6 @@ function setup_DB( $metadataID )
   $link2 = mysqli_connect( $new_dbhost, $new_dbuser, $new_dbpasswd, $new_dbname )
            or die("Could not connect to database server or select $new_dbname. ");
 
-  // Mark this brand-new instance's people_audit as already UTC: this
-  // instance's own write_audit_row() has always written UTC from its
-  // very first row, so nothing here ever
-  // needs the local-time-to-UTC conversion uslims_upgrade.php and
-  // dbupgrade's stage1/stage2 run for a genuinely pre-existing instance.
-  // Without this, a later uslims_upgrade.php --apply (run periodically by
-  // the roles playbook) or a dbupgrade export/import finds no boundary
-  // recorded at all once this instance has accumulated real rows, and
-  // treats them as needing conversion -- shifting already-correct data.
-  // Marking it done here, at creation, closes the gap at the source
-  // instead of asking every later consumer to guess retroactively. Table
-  // shape matches dbutils' own create_people_audit_utc_migration_marker_
-  // table()/mark_people_audit_utc_migration_done() (utility.php) exactly;
-  // duplicated here rather than required directly, since that file's own
-  // top-level `$STDERR = STDERR;` assumes a CLI SAPI and is not guaranteed
-  // under php-fpm's.
-  //
-  // "Always UTC from its very first row" is only true for the dbinst code
-  // this instance's dbinst_branch override actually resolves to, which is
-  // the branch do_step2()'s own generated setup script will later check
-  // out. An explicit override to something other than the default pin
-  // cannot be assumed UTC-aware (an older branch predating
-  // write_audit_row()'s own created_at_utc flag would still write local
-  // time), so the marker is skipped for that case; dbutils' own migration
-  // is content-driven (it reads each row's created_at_utc flag directly,
-  // not only this marker), so skipping it here costs nothing but one
-  // later, correctly-triggered conversion run instead of a possibly-wrong
-  // "nothing to do" claim. Re-reads db_config.php independently rather
-  // than threading do_step2()'s own $dbinst_branch through as a
-  // parameter: that function computes it only after already calling this
-  // one, so it is not available here to receive.
-  $setup_db_dbinst_branch = '';
-  $setup_db_cnfpath = us3_home() . '/lims/database/utils/db_config.php';
-  if ( file_exists( $setup_db_cnfpath ) ) {
-    include $setup_db_cnfpath;
-    $setup_db_dbinst_branch = $repo_branches[ "https://github.com/ehb54/us3lims_dbinst.git" ] ?? '';
-  }
-  // An unrendered ansible template placeholder ("SET-dbinst_branch", left
-  // behind on a host db_config.php was never templated onto) names no
-  // real branch either -- the same as the key being missing or empty.
-  if ( trim( $setup_db_dbinst_branch ) === '' || preg_match( '/^SET-/', trim( $setup_db_dbinst_branch ) ) ) {
-    mysqli_query( $link2, "CREATE TABLE IF NOT EXISTS _dbutils_people_audit_utc_migrated ("
-                         . " migrated_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,"
-                         . " from_time_zone VARCHAR(64) NOT NULL,"
-                         . " system_time_zone VARCHAR(64) NULL,"
-                         . " max_audit_id INT UNSIGNED NULL )" )
-          or die("Query failed creating the UTC-migration marker table<br />\n" . mysqli_error($link2));
-    mysqli_query( $link2, "INSERT INTO _dbutils_people_audit_utc_migrated"
-                         . " ( from_time_zone, system_time_zone, max_audit_id )"
-                         . " VALUES ( 'n/a (newinst-created instance; always UTC)', NULL, 0 )" )
-          or die("Query failed marking the UTC migration done<br />\n" . mysqli_error($link2));
-  }
 
   // Administrator record
   $guid = uuid();
