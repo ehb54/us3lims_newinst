@@ -1,0 +1,5 @@
+# Deployment configuration, symlinked into place by the container entrypoint
+# (or written per-host on a native install). Never versioned: each deployment
+# supplies its own, and they carry site credentials.
+/config.php
+/cluster_config.php

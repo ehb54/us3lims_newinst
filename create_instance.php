@@ -5,7 +5,7 @@
  * Use the information in the metadata table to set up a new db instance
  *
  */
-session_start();
+include 'session.php';
 
 // Are we authorized to view this page?
 if ( ! isset($_SESSION['id']) )
@@ -51,7 +51,7 @@ include 'header.php';
 </div>
 
 <?php
-include 'footer.php';
+include $common_dir . 'footer.php';
 exit();
 
 function do_step1()
@@ -162,7 +162,7 @@ Admin Investigator Setup Information
 Investigator Email: $admin_email
 Investigator Password: $admin_pw
 
-LIMS URL:              http://$new_limshost/$new_dbname
+LIMS URL:              https://$new_limshost/$new_dbname
 TEXT;
 
   global $output_dir;
@@ -205,6 +205,18 @@ TEXT;
 HTML;
 }
 
+// The clone's checkout for db_config.php's dbinst branch. A missing, empty or unrendered
+// "SET-dbinst_branch" value names no branch: git checkout with no argument exits 0 and changes
+// nothing, so it pins nothing instead.
+function dbinst_checkout_command( $branch )
+{
+  $branch = trim( (string) $branch );
+  if ( $branch === '' || strpos( $branch, 'SET-' ) === 0 ) {
+    return '';
+  }
+  return "&& git checkout " . escapeshellarg( $branch );
+}
+
 function do_step2()
 {
   global $link, $globaldbuser, $globaldbpasswd, $globaldbname, $globaldbhost;
@@ -230,12 +242,13 @@ function do_step2()
   $makeconfigfile = $full_path . 'makeconfig.php';
  
   $branch_cmd = "";
-  $cnfpath = exec( "ls ~us3/lims/database/utils/db_config.php" );
+  $cnfpath = us3_home() . '/lims/database/utils/db_config.php';
   if ( file_exists( $cnfpath ) ) {
      include $cnfpath;
-     $branch_cmd = "&& git checkout " . $repo_branches[ "https://github.com/ehb54/us3lims_dbinst.git" ];
+     $branch_cmd = dbinst_checkout_command( $repo_branches[ "https://github.com/ehb54/us3lims_dbinst.git" ] ?? '' );
   }
 
+  $instances_dir = us3_home() . '/lims/etc/config/instances';
   $setupLIMS = <<<TEXT
 #!/bin/bash
 # A script to create the $institution LIMS
@@ -243,18 +256,35 @@ function do_step2()
 DIR=\$(pwd)
 htmldir="/srv/www/htdocs/uslims3"
 
-git clone https://github.com/ehb54/us3lims_dbinst.git \$htmldir/$new_dbname
-( cd \$htmldir/$new_dbname $branch_cmd )
-mkdir \$htmldir/$new_dbname/data
+# Each step is checked. An unchecked clone meant a network or permission failure
+# fell through to a mkdir inside a directory that does not exist, and then to
+# makeconfig against a missing instance, leaving a half-made instance and an
+# error that pointed at the wrong step.
+git clone https://github.com/ehb54/us3lims_dbinst.git \$htmldir/$new_dbname || {
+  echo "git clone of us3lims_dbinst into \$htmldir/$new_dbname failed" >&2
+  exit 1
+}
+( cd \$htmldir/$new_dbname $branch_cmd ) || {
+  echo "could not select the dbinst branch in \$htmldir/$new_dbname" >&2
+  exit 1
+}
+mkdir \$htmldir/$new_dbname/data || exit 1
 #sudo chgrp apache \$htmldir/$new_dbname/data
-chmod g+w \$htmldir/$new_dbname/data
+chmod g+w \$htmldir/$new_dbname/data || exit 1
 
 new_orgsite=$(hostname)
 new_ipaddress=$(resolveip -s `hostname`)
 
-#Now make the config.php file
-php $makeconfigfile $new_dbname \$new_orgsite \$new_ipaddress
-vi \$htmldir/$new_dbname/config.php
+# Create the validated instance overlay and the small compatibility config.php.
+# The host base must be provisioned before running this setup script. Its
+# filename is versioned and owned by the cloned dbinst's loader, so makeconfig
+# below is what checks for it; repeating the name here would go stale at the
+# next contract version and report the wrong missing file.
+test -w $instances_dir || {
+  echo "Unwritable $instances_dir" >&2
+  exit 1
+}
+php $makeconfigfile $new_dbname \$new_orgsite \$new_ipaddress --base-overlay || exit 1
 
 echo "setting default cluster authorizations"
 echo php ~us3/lims/bin/set_cluster_authorizations.php $new_dbname updatepeople
@@ -283,11 +313,11 @@ TEXT;
 
   <p>A script file called $new_LIMSfile has been created for you in the us3 
      user&rsquo;s $instance_dir directory that does all of this. As the us3 
-     user, execute the script. At the end of the process the script will
-     present the generated config.php for you to edit. Double check the file 
-     using this information:</p>
+     user, execute the script. It creates the instance overlay and
+     config.php and stops if anything fails. Check its output against
+     this information:</p>
 
-  <table cellspacing='0' cellpadding='3' style='text-align:left;'>
+  <table cellspacing='0' cellpadding='3' class='text-left'>
     <tr><th>Database name:</th><td>$new_dbname</td></tr>
     <tr><th>Database user:</th><td>$new_dbuser</td></tr>
     <tr><th>DB User Password:</th><td>$new_dbpasswd</td></tr>
@@ -332,8 +362,20 @@ function setup_DB( $metadataID )
   $admin_pw_hash = MD5( $admin_pw );
 
   // Now switch databases
-  $link2 = mysqli_connect( $new_dbhost, $new_dbuser, $new_dbpasswd, $new_dbname ) 
+  $link2 = mysqli_connect( $new_dbhost, $new_dbuser, $new_dbpasswd, $new_dbname )
            or die("Could not connect to database server or select $new_dbname. ");
+
+
+  // Dispatch scheduler tables, from common's single definition (the same one
+  // dbutils' dispatch_instance_tables migration applies on upgrade).
+  global $class_dir;
+  $dispatch_schema = rtrim( (string) $class_dir, '/' ) . '/dispatch_schema.php';
+  if ( is_file( $dispatch_schema ) ) {
+    require_once $dispatch_schema;
+    $dispatch_errors = dispatch_schema_ensure( $link2, dispatch_instance_table_ddl( $new_dbname ) );
+    if ( $dispatch_errors )
+      die( "Query failed creating the dispatch tables<br />\n" . htmlspecialchars( implode( '; ', $dispatch_errors ) ) );
+  }
 
   // Administrator record
   $guid = uuid();
@@ -436,8 +478,12 @@ function setup_DB( $metadataID )
   mysqli_query($link2,$query) 
         or die("Query failed : $query<br />\n" . mysqli_error($link2));
 
-  // Add the us3 admins to this database
-  add_admins( $link2 );
+  // Add the us3 admins to this database, unless this site has opted out.
+  // True by default, so existing behavior is unchanged until a site admin
+  // sets it explicitly.
+  global $seed_developer_accounts;
+  if ( ! isset( $seed_developer_accounts ) || $seed_developer_accounts )
+    add_admins( $link2 );
 
   // Update status in metadata DB
   global $link, $dbhost, $dbusername, $dbpasswd, $dbname;
@@ -529,40 +575,6 @@ function add_admins( $link2 )
               "userNamePAM   = 'alexsav.science@gmail.com' " .
               $where ;
   $result = mysqli_query( $link2, $query );
-  if ( ! $result )
-    echo "Query failed : $query\n" . mysqli_error($link2);
-
-  if ( in_array( 'gegorbet@gmail.com', $email_list ) )
-  {
-    $query  = "UPDATE people SET ";
-    $where  = "WHERE email   = 'gegorbet@gmail.com' ";
-  }
-
-  else
-  {
-    $guid   = uuid();
-    $query  = "INSERT INTO people SET " .
-              "personGUID    = '$guid', " .
-              "email = 'gegorbet@gmail.com', ";
-    $where  = "";
-  }
-
-  $query   .= "fname         = 'Gary', " .
-              "lname         = 'Gorbet', " .
-              "address       = '32 Campus Drive', " .
-              "city          = 'Missoula', " .
-              "state         = 'MT', " .
-              "zip           = '59812', " .
-              "country       = 'US', " .
-              "phone         = '832-466-9211', " .
-              "password      = '$md5_super', "  .
-              "organization  = 'University of Montana', " .
-              "username      = 'us3gorbet', " .
-              "activated     = 1, " .
-              "userlevel     = 4, " .
-              "userNamePAM   = 'gegorbet@gmail.com' " .
-              $where ;
-  $result   = mysqli_query( $link2, $query );
   if ( ! $result )
     echo "Query failed : $query\n" . mysqli_error($link2);
 
