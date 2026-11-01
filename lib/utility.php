@@ -13,6 +13,19 @@ function us3_home()
   return $entry ? $entry[ 'dir' ] : '/home/us3';
 }
 
+// common's dispatch_schema.php: under $class_dir, else under $common_dir's class/
+// (roles-built hosts point $class_dir at class_local/); '' when neither has it.
+function dispatch_schema_file( $class_dir, $common_dir )
+{
+  foreach ( array( $class_dir, $common_dir === '' ? '' : rtrim( $common_dir, '/' ) . '/class' ) as $dir )
+  {
+    $file = rtrim( (string) $dir, '/' ) . '/dispatch_schema.php';
+    if ( $dir !== '' && is_file( $file ) )
+      return $file;
+  }
+  return '';
+}
+
 function emailsyntax_is_valid($email)
 {
   return filter_var( $email, FILTER_VALIDATE_EMAIL ) !== false;
