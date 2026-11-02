@@ -152,7 +152,8 @@ $v = array_map( function( $s ) { return var_export( (string) $s, true ); }, arra
   'full_path'      => "$dest_path$new_dbname/",
   'data_dir'       => "$dest_path$new_dbname/data/",
   'last_update'    => $today,
-  'copyright_date' => $year ) );
+  'copyright_date' => $year,
+  'site_author'    => instance_site_author( isset( $site_author ) ? $site_author : '' ) ) );
 
 // create config.php script
 $text = <<<TEXT
@@ -168,7 +169,7 @@ $text = <<<TEXT
 \$configs            = parse_ini_file( \$cfgfile, true );
 \$org_name           = 'UltraScan3 LIMS portal';
 \$org_site           = {$v['org_site']};
-\$site_author        = 'CHANGE-ME: site contact name and affiliation';
+\$site_author        = {$v['site_author']};
 \$site_keywords      = 'ultrascan analytical ultracentrifugation lims';
                       # The website keywords (meta tag)
 \$site_desc          = 'Website for the UltraScan3 LIMS portal'; # Site description

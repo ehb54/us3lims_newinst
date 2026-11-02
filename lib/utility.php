@@ -13,6 +13,14 @@ function us3_home()
   return $entry ? $entry[ 'dir' ] : '/home/us3';
 }
 
+// A new instance's $site_author: newinst's own, set by the site; the placeholder while that is unset.
+function instance_site_author( $configured )
+{
+  $configured = trim( (string) $configured );
+  return ( $configured === '' || stripos( $configured, 'CHANGE-ME' ) === 0 )
+         ? 'CHANGE-ME: site contact name and affiliation' : $configured;
+}
+
 function emailsyntax_is_valid($email)
 {
   return filter_var( $email, FILTER_VALIDATE_EMAIL ) !== false;
