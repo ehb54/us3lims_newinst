@@ -366,17 +366,8 @@ function setup_DB( $metadataID )
            or die("Could not connect to database server or select $new_dbname. ");
 
 
-  // Dispatch scheduler tables, from common's single definition (the same one
-  // dbutils' dispatch_instance_tables migration applies on upgrade).
-  global $class_dir, $common_dir;
-  $dispatch_schema = dispatch_schema_file( (string) $class_dir, isset( $common_dir ) ? (string) $common_dir : '' );
-  if ( $dispatch_schema !== '' ) {
-    require_once $dispatch_schema;
-    $dispatch_errors = dispatch_schema_ensure( $link2, dispatch_instance_table_ddl( $new_dbname ) );
-    if ( $dispatch_errors )
-      die( "Query failed creating the dispatch tables<br />\n" . htmlspecialchars( implode( '; ', $dispatch_errors ) ) );
-  }
-  // us3.sql defines them too; without either the instance cannot record a pool submission.
+  // The dispatch scheduler tables come with us3.sql (us3_dispatch.sql); without them the
+  // instance cannot record a pool submission.
   $missing = array();
   foreach ( array( 'dispatch_request', 'dispatch_attempt', 'dispatch_event' ) as $table ) {
     $res = mysqli_query( $link2, "SHOW TABLES LIKE '$table'" );
@@ -384,8 +375,8 @@ function setup_DB( $metadataID )
       $missing[] = $table;
   }
   if ( $missing )
-    die( "Error: $new_dbname has no " . implode( ', ', $missing ) . " table, and dispatch_schema.php was not found"
-       . " under \$class_dir or \$common_dir; load us3.sql from 4.3.0 or set \$common_dir in config.php" );
+    die( "Error: $new_dbname has no " . implode( ', ', $missing ) . " table; load it with us3.sql from a 4.3.0"
+       . " us3_sql checkout (\$sql_dir in config.php)" );
 
   // Administrator record
   $guid = uuid();
