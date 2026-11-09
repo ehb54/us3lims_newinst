@@ -256,35 +256,48 @@ function do_step2()
 DIR=\$(pwd)
 htmldir="/srv/www/htdocs/uslims3"
 
-# Each step is checked. An unchecked clone meant a network or permission failure
-# fell through to a mkdir inside a directory that does not exist, and then to
-# makeconfig against a missing instance, leaving a half-made instance and an
-# error that pointed at the wrong step.
-git clone https://github.com/ehb54/us3lims_dbinst.git \$htmldir/$new_dbname || {
-  echo "git clone of us3lims_dbinst into \$htmldir/$new_dbname failed" >&2
+# All or nothing: a step that fails removes what this run made, so rerunning
+# this script as printed starts clean. The checks come before anything is made.
+made=""
+fail() {
+  echo "\$1" >&2
+  if [ -n "\$made" ]; then
+    echo "removing what this run made, so this script can be rerun: \$made" >&2
+    rm -rf \$made
+  fi
   exit 1
 }
-( cd \$htmldir/$new_dbname $branch_cmd ) || {
-  echo "could not select the dbinst branch in \$htmldir/$new_dbname" >&2
+
+# The host's dbinst base comes with instances/, from the roles or uslims_upgrade.php --apply.
+test -w $instances_dir || {
+  echo "$instances_dir is missing or unwritable: this host has no dbinst base yet." >&2
+  echo "Run php ~us3/lims/database/utils/uslims_upgrade.php --apply as root, then rerun this script." >&2
   exit 1
 }
-mkdir \$htmldir/$new_dbname/data || exit 1
+for path in \$htmldir/$new_dbname $instances_dir/$new_dbname.php; do
+  test -e \$path && {
+    echo "\$path already exists and this script did not make it; move it aside, then rerun this script." >&2
+    exit 1
+  }
+done
+
+made="\$htmldir/$new_dbname"
+git clone https://github.com/ehb54/us3lims_dbinst.git \$htmldir/$new_dbname ||
+  fail "git clone of us3lims_dbinst into \$htmldir/$new_dbname failed"
+( cd \$htmldir/$new_dbname $branch_cmd ) ||
+  fail "could not select the dbinst branch in \$htmldir/$new_dbname"
+mkdir \$htmldir/$new_dbname/data || fail "could not make \$htmldir/$new_dbname/data"
 #sudo chgrp apache \$htmldir/$new_dbname/data
-chmod g+w \$htmldir/$new_dbname/data || exit 1
+chmod g+w \$htmldir/$new_dbname/data || fail "could not make \$htmldir/$new_dbname/data group-writable"
 
 new_orgsite=$(hostname)
 new_ipaddress=$(resolveip -s `hostname`)
 
 # Create the validated instance overlay and the small compatibility config.php.
-# The host base must be provisioned before running this setup script. Its
-# filename is versioned and owned by the cloned dbinst's loader, so makeconfig
-# below is what checks for it; repeating the name here would go stale at the
-# next contract version and report the wrong missing file.
-test -w $instances_dir || {
-  echo "Unwritable $instances_dir" >&2
-  exit 1
-}
-php $makeconfigfile $new_dbname \$new_orgsite \$new_ipaddress --base-overlay || exit 1
+made="\$made $instances_dir/$new_dbname.php"
+php $makeconfigfile $new_dbname \$new_orgsite \$new_ipaddress --base-overlay ||
+  fail "makeconfig.php could not write the instance's configuration (its message is above)"
+made=""
 
 echo "setting default cluster authorizations"
 echo php ~us3/lims/bin/set_cluster_authorizations.php $new_dbname updatepeople
