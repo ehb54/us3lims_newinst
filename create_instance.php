@@ -205,18 +205,6 @@ TEXT;
 HTML;
 }
 
-// The clone's checkout for db_config.php's dbinst branch. A missing, empty or unrendered
-// "SET-dbinst_branch" value names no branch: git checkout with no argument exits 0 and changes
-// nothing, so it pins nothing instead.
-function dbinst_checkout_command( $branch )
-{
-  $branch = trim( (string) $branch );
-  if ( $branch === '' || strpos( $branch, 'SET-' ) === 0 ) {
-    return '';
-  }
-  return "&& git checkout " . escapeshellarg( $branch );
-}
-
 function do_step2()
 {
   global $link, $globaldbuser, $globaldbpasswd, $globaldbname, $globaldbhost;
@@ -241,12 +229,7 @@ function do_step2()
   global $full_path;
   $makeconfigfile = $full_path . 'makeconfig.php';
  
-  $branch_cmd = "";
   $cnfpath = us3_home() . '/lims/database/utils/db_config.php';
-  if ( file_exists( $cnfpath ) ) {
-     include $cnfpath;
-     $branch_cmd = dbinst_checkout_command( $repo_branches[ "https://github.com/ehb54/us3lims_dbinst.git" ] ?? '' );
-  }
 
   $instances_dir = us3_home() . '/lims/etc/config/instances';
   $setupLIMS = <<<TEXT
@@ -274,6 +257,11 @@ test -w $instances_dir || {
   echo "Run php ~us3/lims/database/utils/uslims_upgrade.php --apply as root, then rerun this script." >&2
   exit 1
 }
+# The dbinst ref comes from db_config.php: unreadable, it would silently clone dbinst's default branch.
+[ ! -e $cnfpath ] || [ -r $cnfpath ] || {
+  echo "$cnfpath can't be read by \$(id -un), so this script can't tell which dbinst to clone; make it readable by that account, then rerun this script." >&2
+  exit 1
+}
 for path in \$htmldir/$new_dbname $instances_dir/$new_dbname.php; do
   test -e \$path && {
     echo "\$path already exists and this script did not make it; move it aside, then rerun this script." >&2
@@ -284,8 +272,16 @@ done
 made="\$htmldir/$new_dbname"
 git clone https://github.com/ehb54/us3lims_dbinst.git \$htmldir/$new_dbname ||
   fail "git clone of us3lims_dbinst into \$htmldir/$new_dbname failed"
-( cd \$htmldir/$new_dbname $branch_cmd ) ||
-  fail "could not select the dbinst branch in \$htmldir/$new_dbname"
+# The dbinst ref is read when this script runs, so a corrected db_config.php entry takes effect on a rerun.
+# A missing, empty or unrendered "SET-" entry names no ref: the clone stays on dbinst's default branch.
+fix_ref="set the dbinst entry in $cnfpath's \\\$repo_branches to the branch or tag this host's instances run, then rerun this script"
+ref=\$(php -r '@include \$argv[1]; \$r = trim( (string) ( \$repo_branches["https://github.com/ehb54/us3lims_dbinst.git"] ?? "" ) ); echo strpos( \$r, "SET-" ) === 0 ? "" : \$r;' $cnfpath)
+if [ -n "\$ref" ]; then
+  ( cd \$htmldir/$new_dbname && git checkout "\$ref" ) ||
+    fail "could not check out dbinst '\$ref' in \$htmldir/$new_dbname: \$fix_ref"
+fi
+test -f \$htmldir/$new_dbname/lib/dbinst_config_loader.php ||
+  fail "dbinst '\${ref:-default branch}' has no config loader: \$fix_ref"
 mkdir \$htmldir/$new_dbname/data || fail "could not make \$htmldir/$new_dbname/data"
 #sudo chgrp apache \$htmldir/$new_dbname/data
 chmod g+w \$htmldir/$new_dbname/data || fail "could not make \$htmldir/$new_dbname/data group-writable"
@@ -295,7 +291,7 @@ new_ipaddress=$(resolveip -s `hostname`)
 
 # Create the validated instance overlay and the small compatibility config.php.
 made="\$made $instances_dir/$new_dbname.php"
-php $makeconfigfile $new_dbname \$new_orgsite \$new_ipaddress --base-overlay ||
+php $makeconfigfile $new_dbname "\$new_orgsite" "\$new_ipaddress" --base-overlay ||
   fail "makeconfig.php could not write the instance's configuration (its message is above)"
 made=""
 

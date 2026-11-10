@@ -95,12 +95,7 @@ if ( $base_overlay_mode )
   $dbinst_dir = rtrim( $dest_path, '/' ) . '/' . $new_dbname;
   us3_newinst_require_dbinst_loader( $dbinst_dir );
 
-  $base_values = us3_dbinst_config_load_base( $config_root );
-  if ( $base_values[ 'ipaddr' ] !== $new_ipaddress &&
-       $base_values[ 'ipa_ext' ] !== $new_ipaddress )
-    us3_newinst_config_fail(
-      'the requested host address matches neither v1 base ipaddr nor ipa_ext' );
-
+  // The instance takes ipaddr and ipa_ext from the base; $new_ipaddress is only the legacy generator's.
   $overlay_values = array(
     'org_site'       => "$new_orgsite/$new_dbname",
     'admin'          => "$admin_fname $admin_lname",
