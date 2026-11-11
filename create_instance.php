@@ -274,7 +274,7 @@ git clone https://github.com/ehb54/us3lims_dbinst.git \$htmldir/$new_dbname ||
   fail "git clone of us3lims_dbinst into \$htmldir/$new_dbname failed"
 # The dbinst ref is read when this script runs, so a corrected db_config.php entry takes effect on a rerun.
 # A missing, empty or unrendered "SET-" entry names no ref: the clone stays on dbinst's default branch.
-fix_ref="set the dbinst entry in $cnfpath's \\\$repo_branches to the branch or tag this host's instances run, then rerun this script"
+fix_ref="set the dbinst entry in $cnfpath's \\\$repo_branches to a branch or tag published at https://github.com/ehb54/us3lims_dbinst.git that has lib/dbinst_config_loader.php, then rerun this script"
 ref=\$(php -r '@include \$argv[1]; \$r = trim( (string) ( \$repo_branches["https://github.com/ehb54/us3lims_dbinst.git"] ?? "" ) ); echo strpos( \$r, "SET-" ) === 0 ? "" : \$r;' $cnfpath)
 if [ -n "\$ref" ]; then
   ( cd \$htmldir/$new_dbname && git checkout "\$ref" ) ||
