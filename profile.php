@@ -5,7 +5,9 @@
  * A place for a user to edit/update his own info
  *
  */
-session_start();
+include 'config.php';
+include 'require_https.php';
+include 'session.php';
 
 // Are we authorized to view this page?
 if ( ! isset($_SESSION['id']) )
@@ -54,7 +56,7 @@ else
 </div>
 
 <?php
-include 'footer.php';
+include $common_dir . 'footer.php';
 exit();
 
 // Function to update the current record
@@ -201,7 +203,7 @@ function edit_record()
 
 echo<<<HTML
   <form action="{$_SERVER['PHP_SELF']}" method="post"
-        onsubmit="return validate(this);">
+        class="onsubmit-return-validate-this">
   <table cellspacing='0' cellpadding='10' class='style1'>
     <thead>
       <tr><th colspan='8'>Edit My Information</th></tr>

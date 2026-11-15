@@ -23,7 +23,7 @@ if ( ! $email_address )
 // Quick check to see if record exists  
 
 $query = "SELECT personID, activated FROM people " .
-         "WHERE email='$email_address'";
+         "WHERE email='" . mysqli_real_escape_string($link, $email_address) . "'";
 
 $result    = mysqli_query( $link, $query );
 $row_count = mysqli_num_rows($result);
@@ -66,7 +66,7 @@ $message = "We have reset your password at your request.
     
 New Password: $random_password
     
-http://$org_site
+https://$org_site
 
 Please save this message for your reference.
 Thanks!

@@ -5,7 +5,7 @@
  * Use the information in the metadata table to set up a new db instance
  *
  */
-session_start();
+include 'session.php';
 
 // Are we authorized to view this page?
 if ( ! isset($_SESSION['id']) )
@@ -51,7 +51,7 @@ include 'header.php';
 </div>
 
 <?php
-include 'footer.php';
+include $common_dir . 'footer.php';
 exit();
 
 function do_step1()
@@ -162,7 +162,7 @@ Admin Investigator Setup Information
 Investigator Email: $admin_email
 Investigator Password: $admin_pw
 
-LIMS URL:              http://$new_limshost/$new_dbname
+LIMS URL:              https://$new_limshost/$new_dbname
 TEXT;
 
   global $output_dir;
@@ -229,13 +229,9 @@ function do_step2()
   global $full_path;
   $makeconfigfile = $full_path . 'makeconfig.php';
  
-  $branch_cmd = "";
-  $cnfpath = exec( "ls ~us3/lims/database/utils/db_config.php" );
-  if ( file_exists( $cnfpath ) ) {
-     include $cnfpath;
-     $branch_cmd = "&& git checkout " . $repo_branches[ "https://github.com/ehb54/us3lims_dbinst.git" ];
-  }
+  $cnfpath = us3_home() . '/lims/database/utils/db_config.php';
 
+  $instances_dir = us3_home() . '/lims/etc/config/instances';
   $setupLIMS = <<<TEXT
 #!/bin/bash
 # A script to create the $institution LIMS
@@ -243,18 +239,61 @@ function do_step2()
 DIR=\$(pwd)
 htmldir="/srv/www/htdocs/uslims3"
 
-git clone https://github.com/ehb54/us3lims_dbinst.git \$htmldir/$new_dbname
-( cd \$htmldir/$new_dbname $branch_cmd )
-mkdir \$htmldir/$new_dbname/data
+# All or nothing: a step that fails removes what this run made, so rerunning
+# this script as printed starts clean. The checks come before anything is made.
+made=""
+fail() {
+  echo "\$1" >&2
+  if [ -n "\$made" ]; then
+    echo "removing what this run made, so this script can be rerun: \$made" >&2
+    rm -rf \$made
+  fi
+  exit 1
+}
+
+# The host's dbinst base comes with instances/, from the roles or uslims_upgrade.php --apply.
+test -w $instances_dir || {
+  echo "$instances_dir is missing or unwritable: this host has no dbinst base yet." >&2
+  echo "Run php ~us3/lims/database/utils/uslims_upgrade.php --apply as root, then rerun this script." >&2
+  exit 1
+}
+# The dbinst ref comes from db_config.php: unreadable, it would silently clone dbinst's default branch.
+[ ! -e $cnfpath ] || [ -r $cnfpath ] || {
+  echo "$cnfpath can't be read by \$(id -un), so this script can't tell which dbinst to clone; make it readable by that account, then rerun this script." >&2
+  exit 1
+}
+for path in \$htmldir/$new_dbname $instances_dir/$new_dbname.php; do
+  test -e \$path && {
+    echo "\$path already exists and this script did not make it; move it aside, then rerun this script." >&2
+    exit 1
+  }
+done
+
+made="\$htmldir/$new_dbname"
+git clone https://github.com/ehb54/us3lims_dbinst.git \$htmldir/$new_dbname ||
+  fail "git clone of us3lims_dbinst into \$htmldir/$new_dbname failed"
+# The dbinst ref is read when this script runs, so a corrected db_config.php entry takes effect on a rerun.
+# A missing, empty or unrendered "SET-" entry names no ref: the clone stays on dbinst's default branch.
+fix_ref="set the dbinst entry in $cnfpath's \\\$repo_branches to a branch or tag published at https://github.com/ehb54/us3lims_dbinst.git that has lib/dbinst_config_loader.php, then rerun this script"
+ref=\$(php -r '@include \$argv[1]; \$r = trim( (string) ( \$repo_branches["https://github.com/ehb54/us3lims_dbinst.git"] ?? "" ) ); echo strpos( \$r, "SET-" ) === 0 ? "" : \$r;' $cnfpath)
+if [ -n "\$ref" ]; then
+  ( cd \$htmldir/$new_dbname && git checkout "\$ref" ) ||
+    fail "could not check out dbinst '\$ref' in \$htmldir/$new_dbname: \$fix_ref"
+fi
+test -f \$htmldir/$new_dbname/lib/dbinst_config_loader.php ||
+  fail "dbinst '\${ref:-default branch}' has no config loader: \$fix_ref"
+mkdir \$htmldir/$new_dbname/data || fail "could not make \$htmldir/$new_dbname/data"
 #sudo chgrp apache \$htmldir/$new_dbname/data
-chmod g+w \$htmldir/$new_dbname/data
+chmod g+w \$htmldir/$new_dbname/data || fail "could not make \$htmldir/$new_dbname/data group-writable"
 
 new_orgsite=$(hostname)
 new_ipaddress=$(resolveip -s `hostname`)
 
-#Now make the config.php file
-php $makeconfigfile $new_dbname \$new_orgsite \$new_ipaddress
-vi \$htmldir/$new_dbname/config.php
+# Create the validated instance overlay and the small compatibility config.php.
+made="\$made $instances_dir/$new_dbname.php"
+php $makeconfigfile $new_dbname "\$new_orgsite" "\$new_ipaddress" --base-overlay ||
+  fail "makeconfig.php could not write the instance's configuration (its message is above)"
+made=""
 
 echo "setting default cluster authorizations"
 echo php ~us3/lims/bin/set_cluster_authorizations.php $new_dbname updatepeople
@@ -283,11 +322,11 @@ TEXT;
 
   <p>A script file called $new_LIMSfile has been created for you in the us3 
      user&rsquo;s $instance_dir directory that does all of this. As the us3 
-     user, execute the script. At the end of the process the script will
-     present the generated config.php for you to edit. Double check the file 
-     using this information:</p>
+     user, execute the script. It creates the instance overlay and
+     config.php and stops if anything fails. Check its output against
+     this information:</p>
 
-  <table cellspacing='0' cellpadding='3' style='text-align:left;'>
+  <table cellspacing='0' cellpadding='3' class='text-left'>
     <tr><th>Database name:</th><td>$new_dbname</td></tr>
     <tr><th>Database user:</th><td>$new_dbuser</td></tr>
     <tr><th>DB User Password:</th><td>$new_dbpasswd</td></tr>
@@ -332,8 +371,21 @@ function setup_DB( $metadataID )
   $admin_pw_hash = MD5( $admin_pw );
 
   // Now switch databases
-  $link2 = mysqli_connect( $new_dbhost, $new_dbuser, $new_dbpasswd, $new_dbname ) 
+  $link2 = mysqli_connect( $new_dbhost, $new_dbuser, $new_dbpasswd, $new_dbname )
            or die("Could not connect to database server or select $new_dbname. ");
+
+
+  // The dispatch scheduler tables come with us3.sql (us3_dispatch.sql); without them the
+  // instance cannot record a pool submission.
+  $missing = array();
+  foreach ( array( 'dispatch_request', 'dispatch_attempt', 'dispatch_event' ) as $table ) {
+    $res = mysqli_query( $link2, "SHOW TABLES LIKE '$table'" );
+    if ( !$res || mysqli_num_rows( $res ) == 0 )
+      $missing[] = $table;
+  }
+  if ( $missing )
+    die( "Error: $new_dbname has no " . implode( ', ', $missing ) . " table; load it with us3.sql from a 4.3.0"
+       . " us3_sql checkout (\$sql_dir in config.php)" );
 
   // Administrator record
   $guid = uuid();
@@ -436,8 +488,12 @@ function setup_DB( $metadataID )
   mysqli_query($link2,$query) 
         or die("Query failed : $query<br />\n" . mysqli_error($link2));
 
-  // Add the us3 admins to this database
-  add_admins( $link2 );
+  // Add the us3 admins to this database, unless this site has opted out.
+  // True by default, so existing behavior is unchanged until a site admin
+  // sets it explicitly.
+  global $seed_developer_accounts;
+  if ( ! isset( $seed_developer_accounts ) || $seed_developer_accounts )
+    add_admins( $link2 );
 
   // Update status in metadata DB
   global $link, $dbhost, $dbusername, $dbpasswd, $dbname;
@@ -529,40 +585,6 @@ function add_admins( $link2 )
               "userNamePAM   = 'alexsav.science@gmail.com' " .
               $where ;
   $result = mysqli_query( $link2, $query );
-  if ( ! $result )
-    echo "Query failed : $query\n" . mysqli_error($link2);
-
-  if ( in_array( 'gegorbet@gmail.com', $email_list ) )
-  {
-    $query  = "UPDATE people SET ";
-    $where  = "WHERE email   = 'gegorbet@gmail.com' ";
-  }
-
-  else
-  {
-    $guid   = uuid();
-    $query  = "INSERT INTO people SET " .
-              "personGUID    = '$guid', " .
-              "email = 'gegorbet@gmail.com', ";
-    $where  = "";
-  }
-
-  $query   .= "fname         = 'Gary', " .
-              "lname         = 'Gorbet', " .
-              "address       = '32 Campus Drive', " .
-              "city          = 'Missoula', " .
-              "state         = 'MT', " .
-              "zip           = '59812', " .
-              "country       = 'US', " .
-              "phone         = '832-466-9211', " .
-              "password      = '$md5_super', "  .
-              "organization  = 'University of Montana', " .
-              "username      = 'us3gorbet', " .
-              "activated     = 1, " .
-              "userlevel     = 4, " .
-              "userNamePAM   = 'gegorbet@gmail.com' " .
-              $where ;
-  $result   = mysqli_query( $link2, $query );
   if ( ! $result )
     echo "Query failed : $query\n" . mysqli_error($link2);
 

@@ -5,7 +5,7 @@
  * main page 
  *
  */
-session_start();
+include 'session.php';
 
 include 'config.php';
 
@@ -67,5 +67,5 @@ Facility Director</p>
 </div>
 
 <?php
-include 'footer.php';
+include $common_dir . 'footer.php';
 ?>

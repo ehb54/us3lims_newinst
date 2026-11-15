@@ -6,27 +6,24 @@
  *
  */
 
+// The us3 account's home, without a shell (SELinux blocks exec() for httpd)
+function us3_home()
+{
+  $entry = function_exists( 'posix_getpwnam' ) ? posix_getpwnam( 'us3' ) : false;
+  return $entry ? $entry[ 'dir' ] : '/home/us3';
+}
+
+// A new instance's $site_author: newinst's own, set by the site; the placeholder while that is unset.
+function instance_site_author( $configured )
+{
+  $configured = trim( (string) $configured );
+  return ( $configured === '' || stripos( $configured, 'CHANGE-ME' ) === 0 )
+         ? 'CHANGE-ME: site contact name and affiliation' : $configured;
+}
+
 function emailsyntax_is_valid($email)
 {
-  if ( strpos( $email, "@" ) === false ) return FALSE;
-
-  list($local, $domain) = explode("@", $email);
-
-  $pattern_local  = '/^([0-9a-zA-Z]*([-|_]?[0-9a-zA-Z]+)*)' .
-                    '(([-|_]?)\.([-|_]?)[0-9a-zA-Z]*([-|_]?[0-9a-zA-Z]+)+)*([-|_]?)$/';
-
-  $pattern_domain = '/^([0-9a-zA-Z]+([-]?[0-9a-zA-Z]+)*)' .
-                    '(([-]?)\.([-]?)[0-9a-zA-Z]*([-]?[0-9a-zA-Z]+)+)*\.[a-z]{2,4}$/';
-
-  $match_local  = preg_match($pattern_local, $local);
-  $match_domain = preg_match($pattern_domain, $domain);
-
-  if ( $match_local && $match_domain )
-  {
-    return TRUE;
-  }
-
-  return FALSE;
+  return filter_var( $email, FILTER_VALIDATE_EMAIL ) !== false;
 }
 
 // Random Password generator. 
@@ -81,7 +78,7 @@ Investigator Email:    $email
 Investigator Password: $admin_pw
 
 LIMS Setup
-URL:                http://$new_limshost/$new_dbname
+URL:                https://$new_limshost/$new_dbname
 TEXT;
 
   // Mail the user
