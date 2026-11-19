@@ -536,16 +536,18 @@ function login_info()
 
   global $sql_dir;
 
+  // As create_instance.php: grants first, and any error stops the script.
   $script = <<<TEXT
 #!/bin/bash
 # A script to create the $institution database
+set -e
 
 echo "Enter the sql root password here";
 read -s -p "Sql Root Password : " PASSW
 LOGIN="-u root -p\${PASSW}"
 
-mysqladmin \${LOGIN} p CREATE $new_dbname
-mysql \${LOGIN} $new_dbname < $new_grantsfile
+mysql \${LOGIN} < $new_grantsfile
+mysqladmin \${LOGIN} CREATE $new_dbname
 
 pushd $sql_dir
 mysql \${LOGIN} $new_dbname < us3.sql
@@ -564,7 +566,7 @@ GRANT ALL ON $new_dbname.* TO '$new_dbuser'@'localhost' IDENTIFIED BY '$new_dbpa
 GRANT ALL ON $new_dbname.* TO '$new_dbuser'@'%' IDENTIFIED BY '$new_dbpasswd';
 GRANT EXECUTE ON $new_dbname.* TO '$new_secureuser'@'%' IDENTIFIED BY '$new_securepw' REQUIRE SSL;
 GRANT ALL ON $new_dbname.* TO 'us3php'@'localhost';
-GRANT ALL ON $new_dbname.* TO 'us3php'@'$new_dbhost';
+GRANT SELECT,INSERT,UPDATE on $new_dbname.* to 'gfac'@'localhost';
 
 TEXT;
 
