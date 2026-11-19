@@ -83,7 +83,7 @@ HTML;
   {
     foreach ($row as $key => $value)
     {
-      $$key = (empty($value)) ? "" : html_entity_decode(stripslashes( nl2br($value)) );
+      $$key = (empty($value)) ? "" : html_entity_decode(stripslashes( nl2br($value)), ENT_COMPAT | ENT_HTML401 );
     }
 
     $table .= <<<HTML

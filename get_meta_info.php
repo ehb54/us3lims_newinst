@@ -9,16 +9,16 @@
  */
 
 
-$institution       = trim(substr(addslashes(htmlentities($_POST['institution'])), 0,255));
-$inst_abbrev       = trim(substr(addslashes(htmlentities($_POST['inst_abbrev'])), 0,10));
-$admin_fname       = trim(substr(addslashes(htmlentities($_POST['admin_fname'])), 0,30));
-$admin_lname       = trim(substr(addslashes(htmlentities($_POST['admin_lname'])), 0,30));
-$admin_email       = trim(substr(addslashes(htmlentities($_POST['admin_email'])), 0,63));
-$lab_name          = trim(       addslashes(htmlentities($_POST['lab_name'])));
-$lab_contact       = trim(       addslashes(htmlentities($_POST['lab_contact'])));
-$location          = trim(substr(addslashes(htmlentities($_POST['location'])), 0, 255));
-$instrument_name   = trim(       addslashes(htmlentities($_POST['instrument_name'])));
-$instrument_serial = trim(       addslashes(htmlentities($_POST['instrument_serial'])));
+$institution       = trim(substr(addslashes(htmlentities($_POST['institution'], ENT_COMPAT | ENT_HTML401)), 0,255));
+$inst_abbrev       = trim(substr(addslashes(htmlentities($_POST['inst_abbrev'], ENT_COMPAT | ENT_HTML401)), 0,10));
+$admin_fname       = trim(substr(addslashes(htmlentities($_POST['admin_fname'], ENT_COMPAT | ENT_HTML401)), 0,30));
+$admin_lname       = trim(substr(addslashes(htmlentities($_POST['admin_lname'], ENT_COMPAT | ENT_HTML401)), 0,30));
+$admin_email       = trim(substr(addslashes(htmlentities($_POST['admin_email'], ENT_COMPAT | ENT_HTML401)), 0,63));
+$lab_name          = trim(       addslashes(htmlentities($_POST['lab_name'], ENT_COMPAT | ENT_HTML401)));
+$lab_contact       = trim(       addslashes(htmlentities($_POST['lab_contact'], ENT_COMPAT | ENT_HTML401)));
+$location          = trim(substr(addslashes(htmlentities($_POST['location'], ENT_COMPAT | ENT_HTML401)), 0, 255));
+$instrument_name   = trim(       addslashes(htmlentities($_POST['instrument_name'], ENT_COMPAT | ENT_HTML401)));
+$instrument_serial = trim(       addslashes(htmlentities($_POST['instrument_serial'], ENT_COMPAT | ENT_HTML401)));
 
 // Let's do some error checking first of all
 // -- most fields are required
