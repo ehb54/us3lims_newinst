@@ -365,7 +365,7 @@ function setup_DB( $metadataID )
   // Create local variables
   foreach ($row as $key => $value)
   {
-    $$key = (empty($value)) ? "" : html_entity_decode( stripslashes( nl2br($value) ) );
+    $$key = (empty($value)) ? "" : html_entity_decode( stripslashes( nl2br($value) ), ENT_COMPAT | ENT_HTML401 );
   }
 
   $admin_pw_hash = MD5( $admin_pw );
