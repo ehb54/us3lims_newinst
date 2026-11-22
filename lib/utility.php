@@ -64,6 +64,11 @@ function email_login_info( $metadataID, $link )
         $new_secureuser,
         $new_securepw )   = mysqli_fetch_array( $result );
 
+  // A plain-text mail: the names and password as typed, not HTML-encoded
+  $fname    = meta_text( $fname );
+  $lname    = meta_text( $lname );
+  $admin_pw = meta_text( $admin_pw );
+
   $hints = <<<TEXT
 Database Setup Information
 
@@ -160,6 +165,52 @@ function uuid() {
             // 8 bits for "clk_seq_low"
         mt_rand(0, 65535), mt_rand(0, 65535), mt_rand(0, 65535) // 48 bits for "node" 
     ); 
+}
+
+// Metadata values are stored HTML-encoded (htmlentities, ENT_COMPAT | ENT_HTML401), and every
+// reader strips slashes and decodes them. These keep a value as it was typed through that.
+
+// The value to store (HTML-encoded, not yet SQL-escaped) for what was typed. When the readers
+// would change it, this adds to $message instead of storing it changed: a backslash (stripped),
+// a control character (a line break would reach the generated scripts; line breaks and tabs
+// are allowed where $multiline) or a stored form longer than $max (cut). $max 0: no limit.
+function meta_value( $typed, $label, $max, &$message, $multiline = false )
+{
+  $typed = trim( (string) $typed );
+  if ( strpos( $typed, '\\' ) !== false )
+    $message .= "--$label cannot contain a backslash.<br />";
+
+  if ( preg_match( $multiline ? '/[\x00-\x08\x0B\x0C\x0E-\x1F\x7F]/' : '/[\x00-\x1F\x7F]/', $typed ) )
+    $message .= "--$label cannot contain "
+              . ( $multiline ? 'control characters' : 'line breaks or other control characters' ) . ".<br />";
+
+  $stored = htmlentities( $typed, ENT_COMPAT | ENT_HTML401 );
+  if ( $max > 0 && strlen( $stored ) > $max )
+    $message .= "--$label is too long: at most $max characters, where each &amp; &quot; &lt; &gt;"
+              . " or accented letter counts as several.<br />";
+
+  return $stored;
+}
+
+// A stored value as the readers see it: slashes stripped, HTML decoded. This is the plain
+// text for the hints file and the email.
+function meta_text( $stored )
+{
+  return html_entity_decode( stripslashes( (string) $stored ), ENT_COMPAT | ENT_HTML401 );
+}
+
+// A stored value for an HTML attribute or element: meta_text(), then escaped, so that
+// ' " & < > show, and an edit form resubmits them, as they were typed.
+function meta_html( $stored )
+{
+  return htmlspecialchars( meta_text( $stored ), ENT_QUOTES | ENT_SUBSTITUTE | ENT_HTML401 );
+}
+
+// Text for a comment line in a generated script or grants file: a line break would end the
+// comment and run the rest. The institution comes from the public request form.
+function comment_text( $text )
+{
+  return preg_replace( '/[\x00-\x1F\x7F]+/', ' ', (string) $text );
 }
 
 ?>
