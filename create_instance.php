@@ -116,15 +116,18 @@ echo "Metadata status = $status<br />";
 
   global $sql_dir;
 
+  // The grants come first and any error stops the script, so a grant the server refuses
+  // leaves no half-made database behind (a database-level grant needs no database yet).
   $script = <<<TEXT
 #!/bin/bash
 # A script to create the $institution database
+set -e
 
 echo "Use the root DB password here";
 read -s -p "Password: " DBPW
 
+mysql -u root -p\$DBPW < $new_grantsfile
 mysqladmin -u root -p\$DBPW CREATE $new_dbname
-mysql -u root -p\$DBPW $new_dbname < $new_grantsfile
 
 pushd $sql_dir
 mysql -u root -p\$DBPW $new_dbname < us3.sql
@@ -133,6 +136,8 @@ popd
 
 TEXT;
 
+  // Hosts the server matches under skip-name-resolve only: MariaDB 10.11 refuses a grant
+  // to an account at the server's host name, which it ignores in that mode.
   $grants = <<<TEXT
 --
 -- $new_grantsfile
@@ -144,7 +149,6 @@ GRANT ALL ON $new_dbname.* TO '$new_dbuser'@'localhost' IDENTIFIED BY '$new_dbpa
 GRANT ALL ON $new_dbname.* TO '$new_dbuser'@'%' IDENTIFIED BY '$new_dbpasswd';
 GRANT EXECUTE ON $new_dbname.* TO '$new_secureuser'@'%' IDENTIFIED BY '$new_securepw' REQUIRE SSL;
 GRANT ALL ON $new_dbname.* TO 'us3php'@'localhost';
-GRANT ALL ON $new_dbname.* TO 'us3php'@'$new_dbhost';
 GRANT SELECT,INSERT,UPDATE on $new_dbname.* to 'gfac'@'localhost';
 
 TEXT;
@@ -183,8 +187,8 @@ TEXT;
   <p>Step 1</p>
 
   <p>Creating a database for $institution includes the following steps:</p>
-  <ul><li>Create the database</li>
-      <li>Enable the LIMS user</li>
+  <ul><li>Enable the LIMS user</li>
+      <li>Create the database</li>
       <li>Load the database definition</li>
       <li>Load the stored procedures</li>
   </ul>
