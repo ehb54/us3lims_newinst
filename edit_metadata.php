@@ -55,7 +55,7 @@ if ( isset( $_POST['create'] ) )
   $message = '';  
   foreach ($row as $key => $value)
   {
-    $value = html_entity_decode( stripslashes( nl2br($value) ) );
+    $value = html_entity_decode( stripslashes( nl2br($value) ), ENT_COMPAT | ENT_HTML401 );
     if ( empty( $value ) )
       $message .= "--$$key cannot be empty.<br />";
   }
@@ -141,13 +141,13 @@ function do_update()
   global $link;
   include 'get_meta_info.php';
   $metadataID   =                                     $_POST['metadataID'];
-  $dbname       = trim(substr(addslashes(htmlentities($_POST['dbname'])), 0,30));
-  $dbuser       = trim(substr(addslashes(htmlentities($_POST['dbuser'])), 0,30));
-  $dbpasswd     = trim(substr(addslashes(htmlentities($_POST['dbpasswd'])), 0,30));
-  $dbhost       = trim(substr(addslashes(htmlentities($_POST['dbhost'])), 0,30));
-  $limshost     = trim(substr(addslashes(htmlentities($_POST['limshost'])), 0,30));
-  $admin_pw1    = trim(substr(addslashes(htmlentities($_POST['admin_pw1'])), 0,80));
-  $admin_pw2    = trim(substr(addslashes(htmlentities($_POST['admin_pw2'])), 0,80));
+  $dbname       = trim(substr(addslashes(htmlentities($_POST['dbname'], ENT_COMPAT | ENT_HTML401)), 0,30));
+  $dbuser       = trim(substr(addslashes(htmlentities($_POST['dbuser'], ENT_COMPAT | ENT_HTML401)), 0,30));
+  $dbpasswd     = trim(substr(addslashes(htmlentities($_POST['dbpasswd'], ENT_COMPAT | ENT_HTML401)), 0,30));
+  $dbhost       = trim(substr(addslashes(htmlentities($_POST['dbhost'], ENT_COMPAT | ENT_HTML401)), 0,30));
+  $limshost     = trim(substr(addslashes(htmlentities($_POST['limshost'], ENT_COMPAT | ENT_HTML401)), 0,30));
+  $admin_pw1    = trim(substr(addslashes(htmlentities($_POST['admin_pw1'], ENT_COMPAT | ENT_HTML401)), 0,80));
+  $admin_pw2    = trim(substr(addslashes(htmlentities($_POST['admin_pw2'], ENT_COMPAT | ENT_HTML401)), 0,80));
   $status       =                                     $_POST['status'];
 
   if ( empty( $dbname ) )
@@ -258,7 +258,7 @@ function display_record()
   // Create local variables; make sure IE displays empty cells properly
   foreach ($row as $key => $value)
   {
-    $$key = (empty($value)) ? "&nbsp;" : html_entity_decode( stripslashes( nl2br($value) ) );
+    $$key = (empty($value)) ? "&nbsp;" : html_entity_decode( stripslashes( nl2br($value) ), ENT_COMPAT | ENT_HTML401 );
   }
 
   global $request_status;               // From lib/selectboxes.php
@@ -397,21 +397,21 @@ function edit_record()
   $row = mysqli_fetch_array($result);
 
 
-  $institution         = html_entity_decode( stripslashes( $row['institution'] ) );
-  $inst_abbrev         = html_entity_decode( stripslashes( $row['inst_abbrev'] ) );
-  $dbname              = html_entity_decode( stripslashes( $row['dbname'] ) );
-  $dbuser              = html_entity_decode( stripslashes( $row['dbuser'] ) );
-  $dbpasswd            = html_entity_decode( stripslashes( $row['dbpasswd'] ) );
-  $dbhost              = html_entity_decode( stripslashes( $row['dbhost'] ) );
-  $limshost            = html_entity_decode( stripslashes( $row['limshost'] ) );
-  $admin_fname         = html_entity_decode( stripslashes( $row['admin_fname'] ) );
-  $admin_lname         = html_entity_decode( stripslashes( $row['admin_lname'] ) );
-  $admin_email         = html_entity_decode( stripslashes( $row['admin_email'] ) );
-  $lab_name            = html_entity_decode( stripslashes( $row['lab_name'] ) );
-  $lab_contact         = html_entity_decode( stripslashes( $row['lab_contact'] ) );
-  $location            = html_entity_decode( stripslashes( $row['location'] ) );
-  $instrument_name     = html_entity_decode( stripslashes( $row['instrument_name'] ) );
-  $instrument_serial   = html_entity_decode( stripslashes( $row['instrument_serial'] ) );
+  $institution         = html_entity_decode( stripslashes( $row['institution'] ), ENT_COMPAT | ENT_HTML401 );
+  $inst_abbrev         = html_entity_decode( stripslashes( $row['inst_abbrev'] ), ENT_COMPAT | ENT_HTML401 );
+  $dbname              = html_entity_decode( stripslashes( $row['dbname'] ), ENT_COMPAT | ENT_HTML401 );
+  $dbuser              = html_entity_decode( stripslashes( $row['dbuser'] ), ENT_COMPAT | ENT_HTML401 );
+  $dbpasswd            = html_entity_decode( stripslashes( $row['dbpasswd'] ), ENT_COMPAT | ENT_HTML401 );
+  $dbhost              = html_entity_decode( stripslashes( $row['dbhost'] ), ENT_COMPAT | ENT_HTML401 );
+  $limshost            = html_entity_decode( stripslashes( $row['limshost'] ), ENT_COMPAT | ENT_HTML401 );
+  $admin_fname         = html_entity_decode( stripslashes( $row['admin_fname'] ), ENT_COMPAT | ENT_HTML401 );
+  $admin_lname         = html_entity_decode( stripslashes( $row['admin_lname'] ), ENT_COMPAT | ENT_HTML401 );
+  $admin_email         = html_entity_decode( stripslashes( $row['admin_email'] ), ENT_COMPAT | ENT_HTML401 );
+  $lab_name            = html_entity_decode( stripslashes( $row['lab_name'] ), ENT_COMPAT | ENT_HTML401 );
+  $lab_contact         = html_entity_decode( stripslashes( $row['lab_contact'] ), ENT_COMPAT | ENT_HTML401 );
+  $location            = html_entity_decode( stripslashes( $row['location'] ), ENT_COMPAT | ENT_HTML401 );
+  $instrument_name     = html_entity_decode( stripslashes( $row['instrument_name'] ), ENT_COMPAT | ENT_HTML401 );
+  $instrument_serial   = html_entity_decode( stripslashes( $row['instrument_serial'] ), ENT_COMPAT | ENT_HTML401 );
   $status              =                                   $row['status'];
 
 

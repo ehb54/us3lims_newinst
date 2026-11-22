@@ -77,8 +77,8 @@ function do_create()
   include 'get_meta_info.php';
   $req_admin_email = $admin_email;
   include 'config.php';
-  $admin_pw1    = trim(substr(addslashes(htmlentities($_POST['admin_pw1'])), 0,80));
-  $admin_pw2    = trim(substr(addslashes(htmlentities($_POST['admin_pw2'])), 0,80));
+  $admin_pw1    = trim(substr(addslashes(htmlentities($_POST['admin_pw1'], ENT_COMPAT | ENT_HTML401)), 0,80));
+  $admin_pw2    = trim(substr(addslashes(htmlentities($_POST['admin_pw2'], ENT_COMPAT | ENT_HTML401)), 0,80));
 
   if ( empty( $admin_pw1 ) )
     $message .= "--administrator password cannot be empty.<br />";
