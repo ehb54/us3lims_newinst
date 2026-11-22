@@ -312,6 +312,11 @@ function email_admin( $institution, $requester_fname = '', $requester_lname = ''
   // typed into the form -- the exact bug this fix exists to close.
   include 'config.php';
 
+  // A plain-text mail: the values as typed, not HTML-encoded and SQL-escaped
+  $institution     = meta_text( $institution );
+  $requester_fname = meta_text( $requester_fname );
+  $requester_lname = meta_text( $requester_lname );
+
   $email = $admin_email;
 
   // $admin_email isn't guaranteed to be a real address -- us3lims-roles'
@@ -364,6 +369,7 @@ function email_admin( $institution, $requester_fname = '', $requester_lname = ''
   $headers .= "Message-ID: <" . $now . "info@" . $_SERVER['SERVER_NAME'] . ">\n";
   $headers .= "X-Mailer: PHP v" . phpversion()         . "\n";
   $headers .= "MIME-Version: 1.0"                      . "\n";
+  $headers .= "Content-Type: text/plain; charset=UTF-8" . "\n";
   $headers .= "Content-Transfer-Encoding: 8bit"        . "\n";
 
   mail($email, $subject, $message, $headers);

@@ -115,6 +115,7 @@ TEXT;
   $headers .= "Message-ID: <" . $now . "info@" . $_SERVER['SERVER_NAME'] . ">\n";
   $headers .= "X-Mailer: PHP v" . phpversion()         . "\n";
   $headers .= "MIME-Version: 1.0"                      . "\n";
+  $headers .= "Content-Type: text/plain; charset=UTF-8" . "\n";
   $headers .= "Content-Transfer-Encoding: 8bit"        . "\n";
 
   mail($email, $subject, $message, $headers);
