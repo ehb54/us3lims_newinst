@@ -141,13 +141,12 @@ function do_update()
   global $link;
   include 'get_meta_info.php';
   $metadataID   =                                     $_POST['metadataID'];
-  $dbname       = trim(substr(addslashes(htmlentities($_POST['dbname'], ENT_COMPAT | ENT_HTML401)), 0,30));
-  $dbuser       = trim(substr(addslashes(htmlentities($_POST['dbuser'], ENT_COMPAT | ENT_HTML401)), 0,30));
-  $dbpasswd     = trim(substr(addslashes(htmlentities($_POST['dbpasswd'], ENT_COMPAT | ENT_HTML401)), 0,30));
-  $dbhost       = trim(substr(addslashes(htmlentities($_POST['dbhost'], ENT_COMPAT | ENT_HTML401)), 0,30));
-  $limshost     = trim(substr(addslashes(htmlentities($_POST['limshost'], ENT_COMPAT | ENT_HTML401)), 0,30));
-  $admin_pw1    = trim(substr(addslashes(htmlentities($_POST['admin_pw1'], ENT_COMPAT | ENT_HTML401)), 0,80));
-  $admin_pw2    = trim(substr(addslashes(htmlentities($_POST['admin_pw2'], ENT_COMPAT | ENT_HTML401)), 0,80));
+  $dbname       = addslashes( meta_value( $_POST['dbname'],    'db name',                30, $message ) );
+  list( $dbuser, $dbpasswd ) = db_account( $metadataID, $message );
+  $dbhost       = addslashes( meta_value( $_POST['dbhost'],    'db host',                30, $message ) );
+  $limshost     = addslashes( meta_value( $_POST['limshost'],  'lims host',              30, $message ) );
+  $admin_pw1    = addslashes( meta_value( $_POST['admin_pw1'], 'administrator password', 80, $message ) );
+  $admin_pw2    = addslashes( htmlentities( trim( $_POST['admin_pw2'] ), ENT_COMPAT | ENT_HTML401 ) );
   $status       =                                     $_POST['status'];
 
   if ( empty( $dbname ) )
@@ -234,6 +233,52 @@ function do_update()
 
 }
 
+// The database user and password to store, SQL-escaped. The stored values reach GRANT ...
+// IDENTIFIED BY '...' (login info here, create_instance.php and us3lims_dbutils), step 2's
+// connect and makeconfig.php's config, so a new value may hold only characters that no
+// encoding, escaping or decoding on the way changes: letters, digits and _ in the user, and
+// printable ASCII except ' " \ & < > in the password, with no space at either end. Anything
+// else is refused in $message. A value stored before these checks, resubmitted unchanged by
+// the edit form, is kept as it is.
+function db_account( $metadataID, &$message )
+{
+  global $link;
+  $query  = "SELECT dbuser, dbpasswd FROM metadata WHERE metadataID = " . (int) $metadataID;
+  $result = mysqli_query( $link, $query )
+            or die("Query failed : $query<br />\n" . mysqli_error($link));
+  $old    = mysqli_fetch_array( $result, MYSQLI_ASSOC );
+
+  $user = (string) $_POST['dbuser'];
+  if ( $old && $user === meta_text( $old['dbuser'] ) )
+    $user = (string) $old['dbuser'];
+
+  else
+  {
+    $user = trim( $user );
+    if ( $user !== '' && ! preg_match( '/^[A-Za-z0-9_]{1,30}$/', $user ) )
+      $message .= "--db user name can have at most 30 letters, digits or underscores.<br />";
+  }
+
+  $pw = (string) $_POST['dbpasswd'];
+  if ( $old && $pw === meta_text( $old['dbpasswd'] ) )
+    $pw = (string) $old['dbpasswd'];
+
+  else if ( $pw !== '' )
+  {
+    if ( strlen( $pw ) > 30 )
+      $message .= "--db password can have at most 30 characters.<br />";
+
+    if ( ! preg_match( '/^[ !#-%(-;=?-\[\]-~]*$/', $pw ) )
+      $message .= '--db password can have letters, digits, spaces and !#$%()*+,-./:;=?@[]^_`{|}~,'
+                . ' but not &#039; &quot; \ &amp; &lt; &gt; or accented letters.<br />';
+
+    else if ( $pw !== trim( $pw ) )
+      $message .= "--db password cannot begin or end with a space.<br />";
+  }
+
+  return array( addslashes( $user ), addslashes( $pw ) );
+}
+
 // Function to display and navigate records
 function display_record()
 {
@@ -255,10 +300,11 @@ function display_record()
 
   $row    = mysqli_fetch_array($result, MYSQLI_ASSOC);
 
-  // Create local variables; make sure IE displays empty cells properly
+  // Create local variables; make sure IE displays empty cells properly.
+  // Escaped, so stored markup shows as text.
   foreach ($row as $key => $value)
   {
-    $$key = (empty($value)) ? "&nbsp;" : html_entity_decode( stripslashes( nl2br($value) ), ENT_COMPAT | ENT_HTML401 );
+    $$key = (empty($value)) ? "&nbsp;" : nl2br( meta_html( $value ) );
   }
 
   global $request_status;               // From lib/selectboxes.php
@@ -397,21 +443,22 @@ function edit_record()
   $row = mysqli_fetch_array($result);
 
 
-  $institution         = html_entity_decode( stripslashes( $row['institution'] ), ENT_COMPAT | ENT_HTML401 );
-  $inst_abbrev         = html_entity_decode( stripslashes( $row['inst_abbrev'] ), ENT_COMPAT | ENT_HTML401 );
-  $dbname              = html_entity_decode( stripslashes( $row['dbname'] ), ENT_COMPAT | ENT_HTML401 );
-  $dbuser              = html_entity_decode( stripslashes( $row['dbuser'] ), ENT_COMPAT | ENT_HTML401 );
-  $dbpasswd            = html_entity_decode( stripslashes( $row['dbpasswd'] ), ENT_COMPAT | ENT_HTML401 );
-  $dbhost              = html_entity_decode( stripslashes( $row['dbhost'] ), ENT_COMPAT | ENT_HTML401 );
-  $limshost            = html_entity_decode( stripslashes( $row['limshost'] ), ENT_COMPAT | ENT_HTML401 );
-  $admin_fname         = html_entity_decode( stripslashes( $row['admin_fname'] ), ENT_COMPAT | ENT_HTML401 );
-  $admin_lname         = html_entity_decode( stripslashes( $row['admin_lname'] ), ENT_COMPAT | ENT_HTML401 );
-  $admin_email         = html_entity_decode( stripslashes( $row['admin_email'] ), ENT_COMPAT | ENT_HTML401 );
-  $lab_name            = html_entity_decode( stripslashes( $row['lab_name'] ), ENT_COMPAT | ENT_HTML401 );
-  $lab_contact         = html_entity_decode( stripslashes( $row['lab_contact'] ), ENT_COMPAT | ENT_HTML401 );
-  $location            = html_entity_decode( stripslashes( $row['location'] ), ENT_COMPAT | ENT_HTML401 );
-  $instrument_name     = html_entity_decode( stripslashes( $row['instrument_name'] ), ENT_COMPAT | ENT_HTML401 );
-  $instrument_serial   = html_entity_decode( stripslashes( $row['instrument_serial'] ), ENT_COMPAT | ENT_HTML401 );
+  // Escaped for the single-quoted value='...', so ' " & < > resubmit as stored
+  $institution         = meta_html( $row['institution'] );
+  $inst_abbrev         = meta_html( $row['inst_abbrev'] );
+  $dbname              = meta_html( $row['dbname'] );
+  $dbuser              = meta_html( $row['dbuser'] );
+  $dbpasswd            = meta_html( $row['dbpasswd'] );
+  $dbhost              = meta_html( $row['dbhost'] );
+  $limshost            = meta_html( $row['limshost'] );
+  $admin_fname         = meta_html( $row['admin_fname'] );
+  $admin_lname         = meta_html( $row['admin_lname'] );
+  $admin_email         = meta_html( $row['admin_email'] );
+  $lab_name            = meta_html( $row['lab_name'] );
+  $lab_contact         = meta_html( $row['lab_contact'] );
+  $location            = meta_html( $row['location'] );
+  $instrument_name     = meta_html( $row['instrument_name'] );
+  $instrument_serial   = meta_html( $row['instrument_serial'] );
   $status              =                                   $row['status'];
 
 
@@ -532,6 +579,8 @@ function login_info()
         $new_secureuser,
         $new_securepw )   = mysqli_fetch_array( $result );
 
+  // Only in comment lines of the scripts below, so no line break
+  $institution    = comment_text( $institution );
   $new_grantsfile = $new_dbname . '_grants.sql';
 
   global $sql_dir;

@@ -100,6 +100,10 @@ echo "Metadata status = $status<br />";
         $admin_email,
         $admin_pw )   = mysqli_fetch_array( $result );
 
+  // The institution goes into comment lines of the scripts, so no line break; the hints file
+  // is plain text, so the password as typed (as step 2 hashes it), not HTML-encoded
+  $institution    = comment_text( $institution );
+  $admin_pw       = meta_text( $admin_pw );
   $new_secureuser = $inst_abbrev . '_sec';
   $new_securepw   = makeRandomPassword();
   $new_scriptfile = $new_dbname . '.sh';
@@ -229,6 +233,9 @@ function do_step2()
         $new_dbuser,
         $new_dbpasswd,
         $new_dbhost )    = mysqli_fetch_array( $result );
+
+  // Into a comment line of the script below, so no line break
+  $institution = comment_text( $institution );
 
   global $full_path;
   $makeconfigfile = $full_path . 'makeconfig.php';
@@ -390,6 +397,12 @@ function setup_DB( $metadataID )
   if ( $missing )
     die( "Error: $new_dbname has no " . implode( ', ', $missing ) . " table; load it with us3.sql from a 4.3.0"
        . " us3_sql checkout (\$sql_dir in config.php)" );
+
+  // The decoded values below go into SQL strings: an apostrophe (King's College) would
+  // otherwise fail the insert after the database has been made
+  foreach ( array( 'institution', 'admin_fname', 'admin_lname', 'admin_email',
+                   'lab_name', 'lab_contact', 'instrument_name', 'instrument_serial' ) as $key )
+    $$key = mysqli_real_escape_string( $link2, $$key );
 
   // Administrator record
   $guid = uuid();

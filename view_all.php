@@ -83,7 +83,9 @@ HTML;
   {
     foreach ($row as $key => $value)
     {
-      $$key = (empty($value)) ? "" : html_entity_decode(stripslashes( nl2br($value)), ENT_COMPAT | ENT_HTML401 );
+      // Decoded, then escaped, so stored markup shows as text
+      $$key = (empty($value)) ? "" : nl2br( htmlspecialchars( html_entity_decode( stripslashes( $value ), ENT_COMPAT | ENT_HTML401 ),
+                                                              ENT_QUOTES | ENT_SUBSTITUTE | ENT_HTML401 ) );
     }
 
     $table .= <<<HTML

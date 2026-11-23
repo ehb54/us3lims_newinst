@@ -77,8 +77,8 @@ function do_create()
   include 'get_meta_info.php';
   $req_admin_email = $admin_email;
   include 'config.php';
-  $admin_pw1    = trim(substr(addslashes(htmlentities($_POST['admin_pw1'], ENT_COMPAT | ENT_HTML401)), 0,80));
-  $admin_pw2    = trim(substr(addslashes(htmlentities($_POST['admin_pw2'], ENT_COMPAT | ENT_HTML401)), 0,80));
+  $admin_pw1    = addslashes( meta_value( $_POST['admin_pw1'], 'administrator password', 80, $message ) );
+  $admin_pw2    = addslashes( htmlentities( trim( $_POST['admin_pw2'] ), ENT_COMPAT | ENT_HTML401 ) );
 
   if ( empty( $admin_pw1 ) )
     $message .= "--administrator password cannot be empty.<br />";
@@ -160,7 +160,7 @@ function show_record()
   global $fields;
   foreach ( $fields as $field )
   {
-    $$field = $_SESSION[ $field ];
+    $$field = meta_html( $_SESSION[ $field ] );   // as typed, markup shown as text
     unset( $_SESSION[ $field ] );
   }
 
@@ -205,7 +205,8 @@ function enter_record()
   global $fields;
   foreach ( $fields as $field )
   {
-    $$field = $_SESSION[ $field ];
+    // After a refused request, what was typed, escaped for the single-quoted value='...'
+    $$field = meta_html( isset( $_SESSION[ $field ] ) ? $_SESSION[ $field ] : '' );
     unset( $_SESSION[ $field ] );
   }
 
@@ -311,6 +312,11 @@ function email_admin( $institution, $requester_fname = '', $requester_lname = ''
   // typed into the form -- the exact bug this fix exists to close.
   include 'config.php';
 
+  // A plain-text mail: the values as typed, not HTML-encoded and SQL-escaped
+  $institution     = meta_text( $institution );
+  $requester_fname = meta_text( $requester_fname );
+  $requester_lname = meta_text( $requester_lname );
+
   $email = $admin_email;
 
   // $admin_email isn't guaranteed to be a real address -- us3lims-roles'
@@ -363,6 +369,7 @@ function email_admin( $institution, $requester_fname = '', $requester_lname = ''
   $headers .= "Message-ID: <" . $now . "info@" . $_SERVER['SERVER_NAME'] . ">\n";
   $headers .= "X-Mailer: PHP v" . phpversion()         . "\n";
   $headers .= "MIME-Version: 1.0"                      . "\n";
+  $headers .= "Content-Type: text/plain; charset=UTF-8" . "\n";
   $headers .= "Content-Transfer-Encoding: 8bit"        . "\n";
 
   mail($email, $subject, $message, $headers);
