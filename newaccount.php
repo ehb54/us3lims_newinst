@@ -14,9 +14,11 @@ $js = 'js/edit_users.js';
 include 'header.php';
 ?>
 
-<div id='content'>
+<div id='content' class='account-page'>
+<div class='account-card account-card-wide'>
 
-  <h1 class="title">New Account</h1>
+  <p class="account-eyebrow">UltraScan III &middot; LIMS</p>
+  <h1 class="title">Create an account</h1>
 
 <?php
 
@@ -28,9 +30,7 @@ echo<<<HTML
   <p>Please enter your contact information. All fields 
      are required.</p>
 
-  <p class='message'>When entering your address, PLEASE MAKE SURE
-     it is a valid mailing address, since this will be used to
-     mail information to you.</p>
+  <p class='account-note'>Please provide a valid mailing address for correspondence.</p>
 
   <form action="register.php" method="post"
         class='onsubmit-return-validate-this'>
@@ -39,47 +39,49 @@ echo<<<HTML
       <tr><th colspan='2'>Personal Information</th></tr>
     </thead>
 
-    <tfoot>
-      <tr><td colspan='2'><input type='submit' name='create' 
-                           value='Create New Account' /></td></tr>
-    </tfoot>
 
     <tbody>
 
-    <tr><th>First Name:</th>
-        <td><input type='text' name='fname' size='40'
+    <tr><th><label for='register-fname'>First Name:</label></th>
+        <td><input id='register-fname' type='text' name='fname' size='40'
                    maxlength='64' value='$fname' /></td></tr>
-    <tr><th>Last Name:</th>
-        <td><input type='text' name='lname' size='40'
+    <tr><th><label for='register-lname'>Last Name:</label></th>
+        <td><input id='register-lname' type='text' name='lname' size='40'
                    maxlength='64' value='$lname' /></td></tr>
-    <tr><th>Organization:</th>
-        <td><input type='text' name='organization' size='40'
+    <tr><th><label for='register-organization'>Organization:</label></th>
+        <td><input id='register-organization' type='text' name='organization' size='40'
                    maxlength='128' value='$organization' /></td></tr>
-    <tr><th>Address:</th>
-        <td><input type='text' name='address' size='40'
+    <tr><th><label for='register-address'>Address:</label></th>
+        <td><input id='register-address' type='text' name='address' size='40'
                    maxlength='128' value='$address' /></td></tr>
-    <tr><th>City:</th>
-        <td><input type='text' name='city' size='40'
+    <tr><th><label for='register-city'>City:</label></th>
+        <td><input id='register-city' type='text' name='city' size='40'
                    maxlength='64' value='$city' /></td></tr>
-    <tr><th>State (Province):</th>
-        <td><input type='text' name='state' size='40'
+    <tr><th><label for='register-state'>State (Province):</label></th>
+        <td><input id='register-state' type='text' name='state' size='40'
                    maxlength='64' value='$state' /></td></tr>
-    <tr><th>Postal Code (Zip):</th>
-        <td><input type='text' name='zip' size='40'
+    <tr><th><label for='register-zip'>Postal Code (Zip):</label></th>
+        <td><input id='register-zip' type='text' name='zip' size='40'
                    maxlength='16' value='$zip' /></td></tr>
-    <tr><th>Country:</th>
-        <td><input type='text' name='country' size='40'
+    <tr><th><label for='register-country'>Country:</label></th>
+        <td><input id='register-country' type='text' name='country' size='40'
                    maxlength='64' value='$country' /></td></tr>
-    <tr><th>Phone:</th>
-        <td><input type='text' name='phone' size='40'
+    <tr><th><label for='register-phone'>Phone:</label></th>
+        <td><input id='register-phone' type='text' name='phone' size='40'
                    maxlength='64' value='$phone' /></td></tr>
-    <tr><th>Email:</th>
-        <td><input type='text' name='email' size='40'
+    <tr><th><label for='register-email'>Email:</label></th>
+        <td><input id='register-email' type='text' name='email' size='40'
                    maxlength='64' value='$email' /></td></tr>
     </tbody>
+    <tfoot>
+      <tr><td colspan='2'><input type='submit' name='create'
+                           value='Create New Account' /></td></tr>
+    </tfoot>
   </table>
   </form>
 
+<p class="account-new"><a href="login.php">&larr; Back to sign in</a></p>
+</div>
 </div>
 
 HTML;
