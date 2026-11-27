@@ -31,6 +31,7 @@ Released      : 8/1/2010
 
 <head>
   <meta http-equiv="content-type" content="text/html; charset=utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>UltraScan Analysis Software</title>
   <meta name="Author" content="Dan Zollars, University of Texas Health Science Center" />
   <meta name="keywords" content="ultrascan analytical ultracentrifugation lims AUC bead modelling SAXS SANS Borries Demeler ultrascan3 van Holde Weischet 2DSA Genetic Algorithm 2-dimensional spectrum analysis" />
