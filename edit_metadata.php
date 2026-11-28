@@ -601,6 +601,8 @@ mysqladmin \${LOGIN} CREATE $new_dbname
 pushd $sql_dir
 mysql \${LOGIN} $new_dbname < us3.sql
 mysql \${LOGIN} $new_dbname < us3_procedures.sql
+mysql \${LOGIN} $new_dbname < us3_counter_reset.sql
+mysql \${LOGIN} $new_dbname < us3_row_version_triggers.sql
 popd
 TEXT;
 
