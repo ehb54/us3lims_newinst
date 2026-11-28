@@ -400,13 +400,17 @@ function setup_DB( $metadataID )
     die( "Error: $new_dbname has no " . implode( ', ', $missing ) . " table; load it with us3.sql from a 4.3.0"
        . " us3_sql checkout (\$sql_dir in config.php)" );
 
-  // Row versions: the sequence and table us3.sql loads, and the triggers the script loads last
+  // Row versions: the sequence and table us3.sql loads, and both triggers on every table with the
+  // row-version columns, which the script loads last
   $res = mysqli_query( $link2, "SELECT ( SELECT COUNT(*) FROM information_schema.TABLES WHERE TABLE_SCHEMA = DATABASE()"
                              . " AND TABLE_NAME IN ( 'us3_row_version_seq', 'operationRecord' ) ),"
-                             . " ( SELECT COUNT(*) FROM information_schema.TRIGGERS WHERE TRIGGER_SCHEMA = DATABASE()"
-                             . " AND TRIGGER_NAME LIKE '%\\_version' )" );
-  $row = $res ? mysqli_fetch_row( $res ) : array( 0, 0 );
-  if ( $row[0] < 2 || $row[1] == 0 )
+                             . " ( SELECT COUNT(*) FROM information_schema.COLUMNS c WHERE c.TABLE_SCHEMA = DATABASE()"
+                             . " AND c.COLUMN_NAME = 'rowVersion' AND ( SELECT COUNT(*) FROM information_schema.TRIGGERS t"
+                             . " WHERE t.TRIGGER_SCHEMA = DATABASE() AND t.EVENT_OBJECT_TABLE = c.TABLE_NAME"
+                             . " AND t.TRIGGER_NAME IN ( CONCAT( c.TABLE_NAME, '_bi_version' ), CONCAT( c.TABLE_NAME, '_bu_version' ) ) ) < 2 ),"
+                             . " ( SELECT COUNT(*) FROM information_schema.COLUMNS WHERE TABLE_SCHEMA = DATABASE() AND COLUMN_NAME = 'rowVersion' )" );
+  $row = $res ? mysqli_fetch_row( $res ) : array( 0, 1, 0 );
+  if ( $row[0] < 2 || $row[1] > 0 || $row[2] == 0 )
     die( "Error: $new_dbname has no row-version sequence or triggers; run the whole script from step 1, with"
        . " us3_sql from a 4.3.0 checkout (\$sql_dir in config.php)" );
 
