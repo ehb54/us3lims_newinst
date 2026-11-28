@@ -136,6 +136,8 @@ mysqladmin -u root -p\$DBPW CREATE $new_dbname
 pushd $sql_dir
 mysql -u root -p\$DBPW $new_dbname < us3.sql
 mysql -u root -p\$DBPW $new_dbname < us3_procedures.sql
+mysql -u root -p\$DBPW $new_dbname < us3_counter_reset.sql
+mysql -u root -p\$DBPW $new_dbname < us3_row_version_triggers.sql
 popd
 
 TEXT;
@@ -397,6 +399,22 @@ function setup_DB( $metadataID )
   if ( $missing )
     die( "Error: $new_dbname has no " . implode( ', ', $missing ) . " table; load it with us3.sql from a 4.3.0"
        . " us3_sql checkout (\$sql_dir in config.php)" );
+
+  // Row versions: the sequence and table us3.sql loads, and the triggers the script loads last
+  $res = mysqli_query( $link2, "SELECT ( SELECT COUNT(*) FROM information_schema.TABLES WHERE TABLE_SCHEMA = DATABASE()"
+                             . " AND TABLE_NAME IN ( 'us3_row_version_seq', 'operationRecord' ) ),"
+                             . " ( SELECT COUNT(*) FROM information_schema.TRIGGERS WHERE TRIGGER_SCHEMA = DATABASE()"
+                             . " AND TRIGGER_NAME LIKE '%\\_version' )" );
+  $row = $res ? mysqli_fetch_row( $res ) : array( 0, 0 );
+  if ( $row[0] < 2 || $row[1] == 0 )
+    die( "Error: $new_dbname has no row-version sequence or triggers; run the whole script from step 1, with"
+       . " us3_sql from a 4.3.0 checkout (\$sql_dir in config.php)" );
+
+  // These rows are made by newinst, for no person of the new instance
+  $client = 'lims/newinst ' . trim( (string) @file_get_contents( __DIR__ . '/VERSION' ) );
+  mysqli_query( $link2, "SET @US3_ACTING_ID = 0, @US3_ID = NULL, @US3_CLIENT = '"
+                      . mysqli_real_escape_string( $link2, substr( trim( $client ), 0, 64 ) ) . "'" )
+        or die( "Query failed : could not set the writer for $new_dbname<br />\n" . mysqli_error( $link2 ) );
 
   // The decoded values below go into SQL strings: an apostrophe (King's College) would
   // otherwise fail the insert after the database has been made
